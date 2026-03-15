@@ -65,22 +65,31 @@ def login_for_access_token(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@app.post("/resumes/", response_model=schemas.Resume)
+@app.post("/resumes/", response_model=schemas.Resume, status_code=201)
 def create_resume_for_user(
     resume: schemas.ResumeCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
+    """
+    Creating new resume for authorized user
+    """
     return crud.create_user_resume(db=db, resume=resume, user_id=current_user.id)
 
 
-@app.get("/resumes")
-def read_resumes(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    print(
-        f"DEBUG: Request from user {current_user.email} with ID {current_user.id}")
-    resumes = crud.get_user_resumes(db, user_id=current_user.id)
-    print(f"DEBUG: Found resumes: {resumes}")
-    return resumes
+@app.get("/resumes/{resume_id}", response_model=schemas.Resume)
+def read_resume(
+    resume_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    resume = crud.get_resume(
+        db=db, resume_id=resume_id, user_id=current_user.id)
+
+    if resume is None:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    return resume
 
 
 @app.delete("/resumes/{resume_id}")

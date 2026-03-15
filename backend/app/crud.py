@@ -40,6 +40,13 @@ def get_user_resumes(db: Session, user_id: int):
     return db.query(models.Resume).filter(models.Resume.user_id == user_id).all()
 
 
+def get_resume(db: Session, resume_id: int, user_id: int):
+    return db.query(models.Resume).filter(
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user_id
+    ).first()
+
+
 def delete_resume(db: Session, resume_id: int, user_id: int):
     db_resume = db.query(models.Resume).filter(
         models.Resume.id == resume_id,
@@ -53,6 +60,7 @@ def delete_resume(db: Session, resume_id: int, user_id: int):
 
     return False
 
+
 def update_resume(db: Session, resume_id: int, user_id: int, update_data: schemas.ResumeCreate):
     db_resume = db.query(models.Resume).filter(
         models.Resume.id == resume_id,
@@ -64,5 +72,5 @@ def update_resume(db: Session, resume_id: int, user_id: int, update_data: schema
         db.commit()
         db.refresh(db_resume)
         return db_resume
-    
+
     return None
