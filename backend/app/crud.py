@@ -34,3 +34,35 @@ def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
     db.refresh(db_resume)
 
     return db_resume
+
+
+def get_user_resumes(db: Session, user_id: int):
+    return db.query(models.Resume).filter(models.Resume.user_id == user_id).all()
+
+
+def delete_resume(db: Session, resume_id: int, user_id: int):
+    db_resume = db.query(models.Resume).filter(
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user_id
+    ).first()
+
+    if db_resume:
+        db.delete(db_resume)
+        db.commit()
+        return True
+
+    return False
+
+def update_resume(db: Session, resume_id: int, user_id: int, update_data: schemas.ResumeCreate):
+    db_resume = db.query(models.Resume).filter(
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user_id
+    ).first()
+
+    if db_resume:
+        db_resume.title = update_data.title
+        db.commit()
+        db.refresh(db_resume)
+        return db_resume
+    
+    return None

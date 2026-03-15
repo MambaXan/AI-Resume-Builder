@@ -72,3 +72,44 @@ def create_resume_for_user(
     current_user: models.User = Depends(get_current_user)
 ):
     return crud.create_user_resume(db=db, resume=resume, user_id=current_user.id)
+
+
+@app.get("/resumes")
+def read_resumes(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    print(
+        f"DEBUG: Request from user {current_user.email} with ID {current_user.id}")
+    resumes = crud.get_user_resumes(db, user_id=current_user.id)
+    print(f"DEBUG: Found resumes: {resumes}")
+    return resumes
+
+
+@app.delete("/resumes/{resume_id}")
+def delete_user_resume(
+    resume_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    success = crud.delete_resume(
+        db, resume_id=resume_id, user_id=current_user.id)
+    if not success:
+        raise HTTPException(
+            status_code=404, detail="Resume not found or access denied")
+
+    return {"detail": "Resume deleted successfully"}
+
+
+@app.put("/resumes/{resume_id}")
+def update_user_resume(
+    resume_id: int,
+    resume_update: schemas.ResumeCreate,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    updated = crud.update_resume(
+        db, resume_id=resume_id, user_id=current_user.id, update_data=resume_update)
+
+    if not updated:
+        raise HTTPException(
+            status_code=404, detail="Resume not found or access denied")
+
+    return updated
