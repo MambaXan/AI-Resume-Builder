@@ -4,12 +4,27 @@ from . import models, crud, schemas, auth_utils
 from .database import engine, SessionLocal
 from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
+from typing import List, Optional
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def get_db():
@@ -41,7 +56,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     return user
 
 
-@app.post("/users/", response_model=schemas.User)
+@app.post("/auth/register", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
@@ -50,7 +65,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return crud.create_user(db=db, user=user)
 
 
-@app.post("/token")
+@app.post("/auth/token")
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -75,6 +90,17 @@ def create_resume_for_user(
     Creating new resume for authorized user
     """
     return crud.create_user_resume(db=db, resume=resume, user_id=current_user.id)
+
+
+@app.get("/resumes/", response_model=List[schemas.Resume])
+def get_resumes(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Получаем список всех резюме текущего пользователя.
+    """
+    return crud.get_user_resumes(db, user_id=current_user.id)
 
 
 @app.get("/resumes/{resume_id}", response_model=schemas.Resume)

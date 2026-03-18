@@ -1,0 +1,71 @@
+@use "../../styles/global" as *;
+
+.resume-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  &__empty {
+    font-size: 0.875rem;
+    color: $color-muted;
+    padding: 16px 0;
+    text-align: center;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: border-color $transition, box-shadow $transition,
+      background $transition;
+    background: $color-bg;
+
+    &:hover {
+      border-color: $color-accent;
+      box-shadow: 0 0 0 3px rgba($color-accent, 0.08);
+    }
+
+    &--active {
+      border-color: $color-accent;
+      background: rgba($color-accent, 0.04);
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__date {
+    font-size: 0.75rem;
+    color: $color-muted;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  &__btn {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+    height: 28px;
+    border-radius: $radius-sm;
+  }
+}
