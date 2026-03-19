@@ -1,11 +1,13 @@
-@use '../../styles/global' as *;
+@use "../../styles/global" as *;
 
 .editor {
   display: flex;
   height: 100vh;
+  width: 100vw;
   overflow: hidden;
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
+
   &__sidebar {
     width: 260px;
     flex-shrink: 0;
@@ -23,12 +25,13 @@
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
-
     h1 {
       font-size: 1rem;
       font-weight: 700;
       letter-spacing: -0.02em;
-      span { color: $color-accent; }
+      span {
+        color: $color-accent;
+      }
     }
   }
 
@@ -39,7 +42,10 @@
     border-radius: $radius-sm;
     border: 1px solid $color-border;
     transition: border-color $transition;
-    &:hover { border-color: $color-danger; color: $color-danger; }
+    &:hover {
+      border-color: $color-danger;
+      color: $color-danger;
+    }
   }
 
   &__sidebar-list {
@@ -49,6 +55,7 @@
   }
 
   // ── Form pane ──────────────────────────────────────────────────────────────
+
   &__form-pane {
     flex: 1;
     min-width: 0;
@@ -67,7 +74,7 @@
     flex-shrink: 0;
     gap: 12px;
 
-    input[type='text'] {
+    input[type="text"] {
       flex: 1;
       font-size: 1rem;
       font-weight: 600;
@@ -78,8 +85,15 @@
       padding: 4px 0;
       border-bottom: 1.5px solid transparent;
       transition: border-color $transition;
-      &:focus { border-color: $color-accent; }
-      &::placeholder { color: $color-border; font-weight: 400; }
+
+      &:focus {
+        border-color: $color-accent;
+      }
+
+      &::placeholder {
+        color: $color-border;
+        font-weight: 400;
+      }
     }
 
     &-actions {
@@ -99,6 +113,7 @@
   }
 
   // ── Preview pane ───────────────────────────────────────────────────────────
+
   &__preview-pane {
     width: 52%;
     flex-shrink: 0;
@@ -133,7 +148,9 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 
-    &--full { grid-template-columns: 1fr; }
+    &--full {
+      grid-template-columns: 1fr;
+    }
   }
 }
 
@@ -160,7 +177,9 @@
     color: $color-danger;
     padding: 2px 6px;
     border-radius: 4px;
-    &:hover { background: rgba($color-danger, 0.08); }
+    &:hover {
+      background: rgba($color-danger, 0.08);
+    }
   }
 
   &__grid {
@@ -178,5 +197,38 @@
   align-items: center;
   gap: 4px;
   transition: opacity $transition;
-  &:hover { opacity: 0.7; }
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+@media print {
+  nav,
+  aside,
+  button,
+  .editor__sidebar,
+  .editor__form-pane {
+    display: none !important;
+  }
+
+  .editor__preview-pane {
+    display: block !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+
+  .preview {
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
 }

@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { resumeApi, authApi, onUnauthorized, getToken } from "../../api/client";
+import { useReactToPrint } from "react-to-print";
 import { Resume, WorkExperience, Education, Skill } from "../../types";
 import AuthModal from "../../components/AuthModal";
 import ResumeList from "../../components/ResumeList";
@@ -67,6 +68,22 @@ const EditorPage: React.FC = () => {
   const debouncedDraft = useDebounce(draft, 900);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
+
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: draft.title || "Resume",
+    pageStyle: `
+      @page { 
+        size: A4; 
+        margin: 10mm; 
+      }
+      @media print {
+        body { -webkit-print-color-adjust: exact; }
+      }
+    `,
+  });
 
   useEffect(() => {
     onUnauthorized(() => setAuthed(false));
@@ -246,6 +263,13 @@ const EditorPage: React.FC = () => {
               disabled={saving}
             >
               {saving ? "Saving…" : draft.id ? "Save" : "Create"}
+            </button>
+            <button
+              className="btn btn--secondary"
+              onClick={() => handlePrint()}
+              style={{ marginRight: "8px" }}
+            >
+              Download PDF
             </button>
           </div>
         </div>
@@ -532,7 +556,9 @@ const EditorPage: React.FC = () => {
 
       {/* Preview pane */}
       <div className={styles["editor__preview-pane"]}>
-        <ResumePreview resume={draft} />
+        <div ref={contentRef} className={styles.printable_area}>
+          <ResumePreview resume={draft} />
+        </div>
       </div>
     </div>
   );

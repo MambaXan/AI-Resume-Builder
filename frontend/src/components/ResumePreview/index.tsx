@@ -1,6 +1,6 @@
-import React from 'react';
-import { Resume } from '../../types';
-import styles from './ResumePreview.module.scss';
+import React from "react";
+import { Resume } from "../../types";
+import styles from "./ResumePreview.module.scss";
 
 interface Props {
   resume: Resume;
@@ -8,20 +8,40 @@ interface Props {
 
 const ResumePreview: React.FC<Props> = ({ resume }) => {
   const hasWork = resume.work_experience?.length > 0;
-  const hasEdu  = resume.education?.length > 0;
+  const hasEdu = resume.education?.length > 0;
   const hasSkills = resume.skills?.length > 0;
 
   return (
     <div className={styles.preview}>
       {/* Header */}
       <div className={styles.preview__header}>
-        <h1 className={styles.preview__name}>{resume.full_name || 'Your Name'}</h1>
+        <h1 className={styles.preview__name}>
+          {resume.full_name || "Your Name"}
+        </h1>
         <div className={styles.preview__contact}>
-          {resume.email    && <span>{resume.email}</span>}
-          {resume.phone    && <span>{resume.phone}</span>}
+          {resume.email && <span>{resume.email}</span>}
+          {resume.phone && <span>{resume.phone}</span>}
           {resume.location && <span>{resume.location}</span>}
-          {resume.website  && <span>{resume.website}</span>}
-          {resume.linkedin && <span>{resume.linkedin}</span>}
+          {resume.website && (
+            <a
+              href={resume.website}
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              🔗 Website
+            </a>
+          )}
+          {resume.linkedin && (
+            <a
+              href={resume.linkedin}
+              target="_blank"
+              rel="noreferrer"
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              🔗 LinkedIn
+            </a>
+          )}
         </div>
       </div>
 
@@ -42,11 +62,13 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
               <div className={styles.preview__entry_head}>
                 <strong>{w.position}</strong>
                 <span className={styles.preview__entry_date}>
-                  {w.start_date} – {w.end_date ?? 'Present'}
+                  {w.start_date} – {w.end_date ?? "Present"}
                 </span>
               </div>
               <div className={styles.preview__company}>{w.company}</div>
-              {w.description && <p className={styles.preview__text}>{w.description}</p>}
+              {w.description && (
+                <p className={styles.preview__text}>{w.description}</p>
+              )}
             </div>
           ))}
         </section>
@@ -59,9 +81,12 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
           {resume.education.map((e, i) => (
             <div key={i} className={styles.preview__entry}>
               <div className={styles.preview__entry_head}>
-                <strong>{e.degree}{e.field_of_study ? `, ${e.field_of_study}` : ''}</strong>
+                <strong>
+                  {e.degree}
+                  {e.field_of_study ? `, ${e.field_of_study}` : ""}
+                </strong>
                 <span className={styles.preview__entry_date}>
-                  {e.start_date} – {e.end_date ?? 'Present'}
+                  {e.start_date} – {e.end_date ?? "Present"}
                 </span>
               </div>
               <div className={styles.preview__company}>{e.institution}</div>
@@ -77,7 +102,9 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
           <h2 className={styles.preview__section_title}>Skills</h2>
           <div className={styles.preview__skills}>
             {resume.skills.map((s, i) => (
-              <span key={i} className={styles.preview__skill}>{s.name}</span>
+              <span key={i} className={styles.preview__skill}>
+                {s.name}
+              </span>
             ))}
           </div>
         </section>

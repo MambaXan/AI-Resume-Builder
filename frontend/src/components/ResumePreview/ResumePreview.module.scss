@@ -1,6 +1,7 @@
-@use '../../styles/global' as *;
+@use "../../styles/global" as *;
 
 // A4 ratio: 210mm × 297mm → scaled down to fit panel
+
 .preview {
   width: 210mm;
   min-height: 297mm;
@@ -8,17 +9,17 @@
   background: #fff;
   box-shadow: $shadow-lg;
   transform-origin: top center;
-
   font-size: 9.5pt;
   line-height: 1.55;
   color: #111;
   font-family: $font-base;
-
   // Scale to fit inside the preview pane on most screens
+
   @media (max-width: 1400px) {
     transform: scale(0.75);
     margin-bottom: calc(-297mm * 0.25);
   }
+
   @media (max-width: 1100px) {
     transform: scale(0.62);
     margin-bottom: calc(-297mm * 0.38);
@@ -68,8 +69,9 @@
 
   &__entry {
     margin-bottom: 9pt;
-
-    &:last-child { margin-bottom: 0; }
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   &__entry_head {
@@ -77,7 +79,6 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 8pt;
-
     strong {
       font-size: 10pt;
       font-weight: 600;
@@ -116,4 +117,40 @@
     border-radius: 3pt;
     color: #333;
   }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  .preview {
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: white !important;
+  }
+
+  section,
+  .preview__entry,
+  .preview__section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+}
+
+.short_link {
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 500;
 }
