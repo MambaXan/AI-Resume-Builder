@@ -45,10 +45,12 @@
     font-size: 8.5pt;
     color: #444;
 
-    span {
+    span, a {
       display: flex;
       align-items: center;
-      gap: 4pt;
+      gap: 4px;
+      text-decoration: none;
+      color: inherit;
     }
   }
 

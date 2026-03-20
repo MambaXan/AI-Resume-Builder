@@ -64,6 +64,9 @@ const EditorPage: React.FC = () => {
   const [draft, setDraft] = useState<Resume>(blankResume());
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
 
   const debouncedDraft = useDebounce(draft, 900);
 
@@ -105,25 +108,92 @@ const EditorPage: React.FC = () => {
     loadResumes();
   }, [loadResumes]);
 
+  const handleSaveManual = async () => {
+    if (!draft.title || draft.title.trim() === "") {
+      setSaveMsg("Resume title is required");
+      setSaveStatus("error");
+      setTimeout(() => {
+        setSaveMsg("");
+        setSaveStatus("idle");
+      }, 2000);
+      return;
+    }
+
+    if (!draft.full_name) {
+      setSaveMsg("Name is required");
+      setSaveStatus("error");
+      setTimeout(() => {
+        setSaveMsg("");
+        setSaveStatus("idle");
+      }, 2000);
+      return;
+    }
+
+    setSaving(true);
+    setSaveStatus("saving");
+    setSaveMsg("");
+    try {
+      let saved;
+      if (draft.id) {
+        saved = await resumeApi.update(draft.id, draft);
+      } else {
+        saved = await resumeApi.create(draft);
+      }
+
+      setDraft({
+        ...saved,
+        work_experience: saved.work_experience || [],
+        education: saved.education || [],
+        skills: saved.skills || [],
+      });
+
+      setSaveMsg("Saved ✓");
+      setSaveStatus("saved");
+      setTimeout(() => {
+        setSaveMsg("");
+        setSaveStatus("idle");
+      }, 2000);
+
+      await loadResumes();
+    } catch (e: any) {
+      const errorDetail =
+        typeof e.detail === "object"
+          ? JSON.stringify(e.detail)
+          : e.detail ?? "Error";
+
+      setSaveMsg(errorDetail);
+      setSaveStatus("error");
+      console.error("Save error:", e);
+
+      setTimeout(() => {
+        setSaveMsg("");
+        setSaveStatus("idle");
+      }, 3000);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // ── Auto-save (only when draft has an id) ─────────────────────────────────
 
   useEffect(() => {
     if (!authed || !debouncedDraft.id) return;
-    (async () => {
+
+    const save = async () => {
+      setSaveStatus("saving");
       try {
-        setSaving(true);
         await resumeApi.update(debouncedDraft.id!, debouncedDraft);
-        setSaveMsg("Saved");
-        setTimeout(() => setSaveMsg(""), 1800);
-        await loadResumes();
-      } catch {
-        setSaveMsg("Save failed");
-      } finally {
-        setSaving(false);
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } catch (error) {
+        console.error("Save failed:", error);
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
       }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedDraft]);
+    };
+
+    save();
+  }, [debouncedDraft, authed]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -156,52 +226,6 @@ const EditorPage: React.FC = () => {
       arr.splice(i, 1);
       return { ...d, [key]: arr };
     });
-
-  // ── Save (create or update) ───────────────────────────────────────────────
-
-  const handleSave = async () => {
-    if (!draft.title || draft.title.trim() === "") {
-      setSaveMsg("Resume title is required");
-      return;
-    }
-
-    if (!draft.full_name) {
-      setSaveMsg("Name is required");
-      return;
-    }
-
-    setSaving(true);
-    setSaveMsg("");
-    try {
-      let saved;
-      if (draft.id) {
-        saved = await resumeApi.update(draft.id, draft);
-      } else {
-        saved = await resumeApi.create(draft);
-      }
-
-      setDraft({
-        ...saved,
-        work_experience: saved.work_experience || [],
-        education: saved.education || [],
-        skills: saved.skills || [],
-      });
-
-      setSaveMsg("Saved ✓");
-      setTimeout(() => setSaveMsg(""), 2000);
-      await loadResumes();
-    } catch (e: any) {
-      const errorDetail =
-        typeof e.detail === "object"
-          ? JSON.stringify(e.detail)
-          : e.detail ?? "Error";
-
-      setSaveMsg(errorDetail);
-      console.error("Save error:", e);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleDelete = async (id: number) => {
     await resumeApi.delete(id);
@@ -245,31 +269,37 @@ const EditorPage: React.FC = () => {
 
       {/* Form pane */}
       <div className={styles["editor__form-pane"]}>
-        <div className={styles["editor__form-header"]}>
+        <div className={styles.editor__form_header}>
           <input
+            type="text"
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
             placeholder="Resume title..."
+            className={styles.title_input}
           />
-          <div className={styles["editor__form-header-actions"]}>
-            {saveMsg && (
-              <span style={{ fontSize: "0.8125rem", color: "#6e6e73" }}>
-                {saveMsg}
-              </span>
-            )}
-            <button
-              className="btn btn--primary"
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? "Saving…" : draft.id ? "Save" : "Create"}
-            </button>
+
+          <div className={styles.editor__form_header_actions}>
+            <div className={`${styles.status_badge} ${styles[saveStatus]}`}>
+              {saveStatus === "saving" && (
+                <span className={styles.pulse}>☁️ Saving...</span>
+              )}
+              {saveStatus === "saved" && <span>✅ Saved</span>}
+              {saveStatus === "error" && <span>❌ Error</span>}
+            </div>
+
             <button
               className="btn btn--secondary"
               onClick={() => handlePrint()}
-              style={{ marginRight: "8px" }}
             >
               Download PDF
+            </button>
+
+            <button
+              className="btn btn--primary"
+              onClick={handleSaveManual}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save"}
             </button>
           </div>
         </div>

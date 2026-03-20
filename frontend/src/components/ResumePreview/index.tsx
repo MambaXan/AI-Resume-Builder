@@ -19,17 +19,17 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
           {resume.full_name || "Your Name"}
         </h1>
         <div className={styles.preview__contact}>
-          {resume.email && <span>{resume.email}</span>}
-          {resume.phone && <span>{resume.phone}</span>}
-          {resume.location && <span>{resume.location}</span>}
+          {resume.email && <span>📧 {resume.email}</span>}
+          {resume.phone && <span>📞 {resume.phone}</span>}
+          {resume.location && <span>📍 {resume.location}</span>}
           {resume.website && (
             <a
               href={resume.website}
               target="_blank"
               rel="noreferrer"
-              style={{ textDecoration: "none", color: "inherit" }}
+              className={styles.preview__link}
             >
-              🔗 Website
+              🌐 Website
             </a>
           )}
           {resume.linkedin && (
@@ -37,7 +37,7 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
               href={resume.linkedin}
               target="_blank"
               rel="noreferrer"
-              style={{ textDecoration: "none", color: "inherit" }}
+              className={styles.preview__link}
             >
               🔗 LinkedIn
             </a>

@@ -155,6 +155,10 @@
 }
 
 .entry-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  overflow: hidden;
   border: 1px solid $color-border;
   border-radius: $radius-md;
   padding: 16px;
@@ -186,6 +190,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    width: 100%;
   }
 }
 
@@ -231,4 +239,112 @@
     size: A4;
     margin: 10mm;
   }
+}
+input,
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
+}
+.status_indicator {
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+
+  .loading {
+    color: #666;
+    animation: pulse 1.5s infinite;
+  }
+  .success {
+    color: #28a745;
+  }
+  .error {
+    color: #dc3545;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.editor__form_header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #e0e0e5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff; // Чтобы отделялся от фона
+  position: sticky; // Чтобы хэдер не уезжал при скролле
+  top: 0;
+  z-index: 10;
+  gap: 20px;
+
+  .title_input {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #1d1d1f;
+    padding: 8px 0;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-bottom-color: #007aff;
+    }
+
+    &::placeholder {
+      color: #c7c7cc;
+      font-weight: 400;
+    }
+  }
+
+  &_actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+// Стили для статуса
+.status_badge {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(5px);
+  display: flex;
+  align-items: center;
+
+  &.saving, &.saved, &.error {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  &.saving { color: #86868b; background: #f5f5f7; }
+  &.saved { color: #28a745; background: #eafaf1; }
+  &.error { color: #ff3b30; background: #fff2f2; }
+}
+
+.pulse {
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
 }
