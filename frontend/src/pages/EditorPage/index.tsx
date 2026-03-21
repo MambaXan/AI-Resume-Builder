@@ -78,14 +78,22 @@ const EditorPage: React.FC = () => {
     contentRef,
     documentTitle: draft.title || "Resume",
     pageStyle: `
-      @page { 
-        size: A4; 
-        margin: 10mm; 
+    @page { 
+      size: A4; 
+      /* margin: 0 !important; — Вот эта строчка убивает колонтитулы браузера */
+      margin: 0 !important;
+    }
+    @media print {
+      body { 
+        -webkit-print-color-adjust: exact; 
       }
-      @media print {
-        body { -webkit-print-color-adjust: exact; }
+      /* Нам нужно добавить отступ самому документу, 
+         чтобы текст не лип к краю листа А4 */
+      #printable_area {
+        padding: 10mm 15mm !important; /* Укажи свои отступы для контента */
       }
-    `,
+    }
+  `,
   });
 
   useEffect(() => {
@@ -179,20 +187,19 @@ const EditorPage: React.FC = () => {
   useEffect(() => {
     if (!authed || !debouncedDraft.id) return;
 
-    const save = async () => {
+    const autoSave = async () => {
       setSaveStatus("saving");
       try {
         await resumeApi.update(debouncedDraft.id!, debouncedDraft);
-        setSaveStatus("saved");
-        setTimeout(() => setSaveStatus("idle"), 2000);
+        // Просто переходим в idle, визуально в хэдере всё станет чисто
+        setSaveStatus("idle");
       } catch (error) {
-        console.error("Save failed:", error);
         setSaveStatus("error");
-        setTimeout(() => setSaveStatus("idle"), 3000);
+        // А вот ошибку можно оставить подольше
       }
     };
 
-    save();
+    autoSave();
   }, [debouncedDraft, authed]);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
@@ -260,7 +267,15 @@ const EditorPage: React.FC = () => {
           <ResumeList
             resumes={resumes}
             activeId={draft.id}
-            onSelect={(r) => setDraft(r)}
+            onSelect={(selectedResume) => {
+              // Важно: гарантируем наличие массивов, даже если бэк прислал null
+              setDraft({
+                ...selectedResume,
+                work_experience: selectedResume.work_experience || [],
+                education: selectedResume.education || [],
+                skills: selectedResume.skills || [],
+              });
+            }}
             onDelete={handleDelete}
             onNew={() => setDraft(blankResume())}
           />
@@ -270,30 +285,23 @@ const EditorPage: React.FC = () => {
       {/* Form pane */}
       <div className={styles["editor__form-pane"]}>
         <div className={styles.editor__form_header}>
-          <input
-            type="text"
-            value={draft.title}
-            onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-            placeholder="Resume title..."
-            className={styles.title_input}
-          />
+          <div className={styles.header_left}>
+            <input
+              type="text"
+              className={styles.title_input}
+              value={draft.title}
+              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              placeholder="Resume title..."
+            />
+          </div>
 
-          <div className={styles.editor__form_header_actions}>
-            <div className={`${styles.status_badge} ${styles[saveStatus]}`}>
-              {saveStatus === "saving" && (
-                <span className={styles.pulse}>☁️ Saving...</span>
-              )}
-              {saveStatus === "saved" && <span>✅ Saved</span>}
-              {saveStatus === "error" && <span>❌ Error</span>}
-            </div>
-
+          <div className={styles.header_right}>
             <button
               className="btn btn--secondary"
               onClick={() => handlePrint()}
             >
               Download PDF
             </button>
-
             <button
               className="btn btn--primary"
               onClick={handleSaveManual}
@@ -446,10 +454,7 @@ const EditorPage: React.FC = () => {
               <div className={styles["entry-card"]} key={i}>
                 <div className={styles["entry-card__head"]}>
                   <span>Degree {i + 1}</span>
-                  <button
-                    className={styles["entry-card__remove"]}
-                    onClick={() => removeItem("education", i)}
-                  >
+                  <button onClick={() => removeItem("education", i)}>
                     Remove
                   </button>
                 </div>
@@ -468,27 +473,12 @@ const EditorPage: React.FC = () => {
                       onChange={(ev) => setEdu(i, { degree: ev.target.value })}
                     />
                   </Field>
-                  <Field label="Field of Study">
-                    <input
-                      value={e.field_of_study}
-                      onChange={(ev) =>
-                        setEdu(i, { field_of_study: ev.target.value })
-                      }
-                    />
-                  </Field>
-                  <Field label="GPA (optional)">
-                    <input
-                      value={e.gpa ?? ""}
-                      onChange={(ev) => setEdu(i, { gpa: ev.target.value })}
-                    />
-                  </Field>
                   <Field label="Start">
                     <input
                       value={e.start_date}
                       onChange={(ev) =>
                         setEdu(i, { start_date: ev.target.value })
                       }
-                      placeholder="2018-09"
                     />
                   </Field>
                   <Field label="End">
@@ -497,7 +487,6 @@ const EditorPage: React.FC = () => {
                       onChange={(ev) =>
                         setEdu(i, { end_date: ev.target.value })
                       }
-                      placeholder="2022-06"
                     />
                   </Field>
                 </div>
@@ -585,8 +574,14 @@ const EditorPage: React.FC = () => {
       </div>
 
       {/* Preview pane */}
+      {/* Preview pane */}
       <div className={styles["editor__preview-pane"]}>
-        <div ref={contentRef} className={styles.printable_area}>
+        {/* Добавь id="printable_area" этому диву */}
+        <div
+          ref={contentRef}
+          id="printable_area"
+          className={styles.printable_area}
+        >
           <ResumePreview resume={draft} />
         </div>
       </div>

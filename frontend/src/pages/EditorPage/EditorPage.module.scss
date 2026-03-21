@@ -348,3 +348,149 @@ textarea {
   50% { opacity: 0.4; }
   100% { opacity: 1; }
 }
+
+.editor__form_header {
+  padding: 16px 24px;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e5;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .title_input {
+    flex: 1;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    outline: none;
+    color: #1d1d1f;
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+
+    &:focus { border-bottom-color: #007aff; }
+    &::placeholder { color: #c7c7cc; }
+  }
+
+  &_actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.status_badge {
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: 0.3s;
+  opacity: 0;
+
+  &.saving, &.saved, &.error { opacity: 1; }
+  &.saving { color: #86868b; background: #f5f5f7; }
+  &.saved { color: #28a745; background: #eafaf1; }
+  &.error { color: #ff3b30; background: #fff2f2; }
+}
+
+.pulse { animation: blink 1.5s infinite; }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.sync_indicator {
+  display: flex;
+  align-items: center;
+  min-width: 90px; // Резервируем место, чтобы кнопки не дергались
+  justify-content: flex-end;
+  margin-right: 8px;
+  font-size: 0.8rem;
+  color: #86868b; // Спокойный серый цвет
+
+  .syncing {
+    animation: simplePulse 1.5s infinite ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .sync_error {
+    color: #ff3b30;
+    font-weight: 500;
+  }
+}
+
+@keyframes simplePulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 1; }
+  100% { opacity: 0.4; }
+}
+.editor__form_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  gap: 40px; // Хороший отступ между названием и кнопками
+  background: #fff;
+  border-bottom: 1px solid #e0e0e5;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  .header_left {
+    flex: 1; // Растягивает инпут на максимум
+    min-width: 0; 
+  }
+
+  .header_right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0; // Кнопки стоят монолитом, не сжимаются
+  }
+
+  .title_input {
+    width: 100%;
+    font-size: 1.25rem; // Чуть крупнее, чтобы выглядело солидно
+    font-weight: 700;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #1d1d1f;
+    padding: 4px 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+      border-bottom-color: #007aff;
+    }
+
+    &::placeholder {
+      color: #c7c7cc;
+    }
+  }
+}
+@media (max-width: 1024px) {
+  .editor {
+    display: flex;
+    flex-direction: column; // Стак в колонку
+  }
+
+  .editor__sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e5;
+  }
+
+  .editor__preview-pane {
+    display: none; // Скрываем превью на планшетах/телефонах
+  }
+
+  .editor__form-pane {
+    width: 100%;
+  }
+
+  // Сетка полей (Full Name, Email и т.д.) в одну колонку
+  .field_grid {
+    grid-template-columns: 1fr !important;
+  }
+}
