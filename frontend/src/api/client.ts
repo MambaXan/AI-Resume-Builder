@@ -6,9 +6,8 @@ import {
   Resume,
 } from "../types";
 
-const BASE_URL = "http://127.0.0.1:8000";
+const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
 const TOKEN_KEY = "resume_builder_token";
-const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
 // ─── Token helpers ────────────────────────────────────────────────────────────
 
@@ -41,7 +40,7 @@ async function request<T>(
     if (token) headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
 
   if (res.status === 401) {
     removeToken();
@@ -75,7 +74,7 @@ export const authApi = {
     form.append("username", credentials.email);
     form.append("password", credentials.password);
 
-    const res = await fetch(`${BASE_URL}/auth/token`, {
+    const res = await fetch(`${API_URL}/auth/token`, {
       method: "POST",
       body: form,
     });
