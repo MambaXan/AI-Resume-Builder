@@ -6,7 +6,9 @@ import {
   Resume,
 } from "../types";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+// const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+// Временно хардкодим, чтобы убедиться, что Vercel обновил файл
+const API_URL = "https://resume-builder-618b.onrender.com";
 const TOKEN_KEY = "resume_builder_token";
 
 // ─── Token helpers ────────────────────────────────────────────────────────────
