@@ -9,7 +9,9 @@ from typing import List, Optional
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+print("Connecting to database and creating tables...")
 models.Base.metadata.create_all(bind=engine)
+print("Tables created successfully!")
 
 app = FastAPI()
 
