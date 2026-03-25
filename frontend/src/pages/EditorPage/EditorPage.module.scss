@@ -5,9 +5,9 @@
 .editor {
   display: grid;
   grid-template-columns: 280px 1.2fr 1fr;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  height: 100vh; /* Строго высота экрана */
+  width: 100vw; /* Строго ширина экрана */
+  overflow: hidden; /* ЗАПРЕЩАЕМ общий скролл страницы */
   background: #fff;
 }
 
@@ -60,9 +60,10 @@
 
 // ─── Form pane ──────────────────────────────────────────────────────────────
 .editor__form_pane {
+  height: 100vh; /* Высота во весь экран */
+  overflow-y: auto; /* Скролл только тут */
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
 }
 
 .editor__form_header {
@@ -118,28 +119,32 @@
 
 // ─── Preview pane ───────────────────────────────────────────────────────────
 .editor__preview_pane {
-  background-color: #e8e8ed; 
-  overflow-y: auto;
-  display: flex; // Важно для центрирования листа
+  height: 100vh;
+  background-color: #e8e8ed;
+
+  /* ВОТ ТУТ МЕНЯЕМ */
+  overflow: hidden; /* УБИРАЕМ СКРОЛЛ ПОЛНОСТЬЮ */
+
+  display: flex;
   justify-content: center;
-  padding: 40px 0;
+  align-items: center; /* Центрируем лист и по вертикали тоже */
+  padding: 0;
+  position: relative;
 }
 
 .printable_area {
+  flex-shrink: 0;
   background-color: white;
   width: 210mm;
   min-height: 297mm;
-  padding: 20mm; /* Это внутренние поля документа */
-  margin: 0 auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-  box-sizing: border-box; /* Чтобы padding не увеличивал ширину выше 210мм */
-  
-  // Если на экране всё равно широко, оставь scale
-  transform: scale(0.85); 
-  transform-origin: top center;
+  box-sizing: border-box;
+
+  transform-origin: center center;
 
   @media (max-width: 1600px) {
-    transform: scale(0.8);
+    transform: scale(0.55);
+    margin: 0;
   }
 }
 
