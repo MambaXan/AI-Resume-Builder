@@ -13,7 +13,6 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
 
   return (
     <div className={styles.preview}>
-      {/* Header */}
       <div className={styles.preview__header}>
         <h1 className={styles.preview__name}>
           {resume.full_name || "Your Name"}
@@ -45,7 +44,6 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
         </div>
       </div>
 
-      {/* Summary */}
       {resume.summary && (
         <section className={styles.preview__section}>
           <h2 className={styles.preview__section_title}>Summary</h2>
@@ -53,7 +51,6 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
         </section>
       )}
 
-      {/* Work Experience */}
       {hasWork && (
         <section className={styles.preview__section}>
           <h2 className={styles.preview__section_title}>Experience</h2>
@@ -74,7 +71,6 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
         </section>
       )}
 
-      {/* Education */}
       {hasEdu && (
         <section className={styles.preview__section}>
           <h2 className={styles.preview__section_title}>Education</h2>
@@ -96,7 +92,6 @@ const ResumePreview: React.FC<Props> = ({ resume }) => {
         </section>
       )}
 
-      {/* Skills */}
       {hasSkills && (
         <section className={styles.preview__section}>
           <h2 className={styles.preview__section_title}>Skills</h2>

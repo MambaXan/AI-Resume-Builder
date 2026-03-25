@@ -1,3 +1,4 @@
+// EditorPage.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { resumeApi, authApi, onUnauthorized, getToken } from "../../api/client";
 import { useReactToPrint } from "react-to-print";
@@ -7,8 +8,7 @@ import ResumeList from "../../components/ResumeList";
 import ResumePreview from "../../components/ResumePreview";
 import styles from "./EditorPage.module.scss";
 
-// ─── Blank state factories ────────────────────────────────────────────────────
-
+// ========== Вспомогательные функции ==========
 const blankResume = (): Resume => ({
   title: "",
   full_name: "",
@@ -42,73 +42,58 @@ const blankEdu = (): Education => ({
 
 const blankSkill = (): Skill => ({ name: "", level: "intermediate" });
 
-// ─── Debounce hook ────────────────────────────────────────────────────────────
-
 function useDebounce<T>(value: T, delay = 800): T {
-  const [dv, setDv] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    timer.current = setTimeout(() => setDv(value), delay);
+    timer.current = setTimeout(() => setDebouncedValue(value), delay);
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
   }, [value, delay]);
-  return dv;
+
+  return debouncedValue;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
+// ========== Компонент страницы ==========
 const EditorPage: React.FC = () => {
   const [authed, setAuthed] = useState(!!getToken());
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [draft, setDraft] = useState<Resume>(blankResume());
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
-  const [saveStatus, setSaveStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   const debouncedDraft = useDebounce(draft, 900);
-
-  // ── Auth ──────────────────────────────────────────────────────────────────
-
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Печать
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: draft.title || "Resume",
     pageStyle: `
-    @page { 
-      size: A4; 
-      /* margin: 0 !important; — Вот эта строчка убивает колонтитулы браузера */
-      margin: 0 !important;
-    }
-    @media print {
-      body { 
-        -webkit-print-color-adjust: exact; 
+      @page { size: A4; margin: 0 !important; }
+      @media print {
+        body { -webkit-print-color-adjust: exact; }
+        #printable_area { padding: 10mm 15mm !important; }
       }
-      /* Нам нужно добавить отступ самому документу, 
-         чтобы текст не лип к краю листа А4 */
-      #printable_area {
-        padding: 10mm 15mm !important; /* Укажи свои отступы для контента */
-      }
-    }
-  `,
+    `,
   });
 
+  // Обработка неавторизованного доступа
   useEffect(() => {
     onUnauthorized(() => setAuthed(false));
   }, []);
 
-  // ── Load list ─────────────────────────────────────────────────────────────
-
+  // Загрузка списка резюме
   const loadResumes = useCallback(async () => {
     if (!authed) return;
     try {
       const list = await resumeApi.list();
       setResumes(list);
     } catch {
-      // swallow
+      // ignore
     }
   }, [authed]);
 
@@ -116,37 +101,27 @@ const EditorPage: React.FC = () => {
     loadResumes();
   }, [loadResumes]);
 
+  // Ручное сохранение
   const handleSaveManual = async () => {
-    if (!draft.title || draft.title.trim() === "") {
+    if (!draft.title?.trim()) {
       setSaveMsg("Resume title is required");
       setSaveStatus("error");
-      setTimeout(() => {
-        setSaveMsg("");
-        setSaveStatus("idle");
-      }, 2000);
+      setTimeout(() => setSaveStatus("idle"), 2000);
       return;
     }
-
-    if (!draft.full_name) {
+    if (!draft.full_name?.trim()) {
       setSaveMsg("Name is required");
       setSaveStatus("error");
-      setTimeout(() => {
-        setSaveMsg("");
-        setSaveStatus("idle");
-      }, 2000);
+      setTimeout(() => setSaveStatus("idle"), 2000);
       return;
     }
 
     setSaving(true);
     setSaveStatus("saving");
-    setSaveMsg("");
     try {
-      let saved;
-      if (draft.id) {
-        saved = await resumeApi.update(draft.id, draft);
-      } else {
-        saved = await resumeApi.create(draft);
-      }
+      const saved = draft.id
+        ? await resumeApi.update(draft.id, draft)
+        : await resumeApi.create(draft);
 
       setDraft({
         ...saved,
@@ -155,55 +130,34 @@ const EditorPage: React.FC = () => {
         skills: saved.skills || [],
       });
 
-      setSaveMsg("Saved ✓");
       setSaveStatus("saved");
-      setTimeout(() => {
-        setSaveMsg("");
-        setSaveStatus("idle");
-      }, 2000);
-
+      setTimeout(() => setSaveStatus("idle"), 2000);
       await loadResumes();
     } catch (e: any) {
-      const errorDetail =
-        typeof e.detail === "object"
-          ? JSON.stringify(e.detail)
-          : e.detail ?? "Error";
-
-      setSaveMsg(errorDetail);
+      setSaveMsg(e.detail ?? "Error");
       setSaveStatus("error");
-      console.error("Save error:", e);
-
-      setTimeout(() => {
-        setSaveMsg("");
-        setSaveStatus("idle");
-      }, 3000);
+      setTimeout(() => setSaveStatus("idle"), 3000);
     } finally {
       setSaving(false);
     }
   };
 
-  // ── Auto-save (only when draft has an id) ─────────────────────────────────
-
+  // Автосохранение (только если есть id)
   useEffect(() => {
     if (!authed || !debouncedDraft.id) return;
-
     const autoSave = async () => {
       setSaveStatus("saving");
       try {
         await resumeApi.update(debouncedDraft.id!, debouncedDraft);
-        // Просто переходим в idle, визуально в хэдере всё станет чисто
         setSaveStatus("idle");
-      } catch (error) {
+      } catch {
         setSaveStatus("error");
-        // А вот ошибку можно оставить подольше
       }
     };
-
     autoSave();
   }, [debouncedDraft, authed]);
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
+  // Общие сеттеры
   const set = (patch: Partial<Resume>) => setDraft((d) => ({ ...d, ...patch }));
 
   const setWork = (i: number, patch: Partial<WorkExperience>) =>
@@ -245,11 +199,7 @@ const EditorPage: React.FC = () => {
     setAuthed(false);
   };
 
-  // ─────────────────────────────────────────────────────────────────────────
-
-  if (!authed) {
-    return <AuthModal onSuccess={() => setAuthed(true)} />;
-  }
+  if (!authed) return <AuthModal onSuccess={() => setAuthed(true)} />;
 
   return (
     <div className={styles.editor}>
@@ -268,7 +218,6 @@ const EditorPage: React.FC = () => {
             resumes={resumes}
             activeId={draft.id}
             onSelect={(selectedResume) => {
-              // Важно: гарантируем наличие массивов, даже если бэк прислал null
               setDraft({
                 ...selectedResume,
                 work_experience: selectedResume.work_experience || [],
@@ -282,24 +231,20 @@ const EditorPage: React.FC = () => {
         </div>
       </aside>
 
-      {/* Form pane */}
-      <div className={styles["editor__form-pane"]}>
+      {/* Форма */}
+      <div className={styles.editor__form_pane}>
         <div className={styles.editor__form_header}>
           <div className={styles.header_left}>
             <input
               type="text"
               className={styles.title_input}
               value={draft.title}
-              onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              onChange={(e) => set({ title: e.target.value })}
               placeholder="Resume title..."
             />
           </div>
-
           <div className={styles.header_right}>
-            <button
-              className="btn btn--secondary"
-              onClick={() => handlePrint()}
-            >
+            <button className="btn btn--secondary" onClick={handlePrint}>
               Download PDF
             </button>
             <button
@@ -312,76 +257,75 @@ const EditorPage: React.FC = () => {
           </div>
         </div>
 
-        <div className={styles["editor__form-body"]}>
-          {/* Personal Info */}
-          <section className="form-section">
-            <div
-              className={`${styles["form-section__title"]} form-section__title`}
-            >
-              Personal
-            </div>
-            <FormSection>
-              <FieldGrid>
-                <Field label="Full Name">
-                  <input
-                    value={draft.full_name}
-                    onChange={(e) => set({ full_name: e.target.value })}
-                    placeholder="Jane Doe"
-                  />
-                </Field>
-                <Field label="Email">
-                  <input
-                    type="email"
-                    value={draft.email}
-                    onChange={(e) => set({ email: e.target.value })}
-                    placeholder="jane@example.com"
-                  />
-                </Field>
-                <Field label="Phone">
-                  <input
-                    value={draft.phone ?? ""}
-                    onChange={(e) => set({ phone: e.target.value })}
-                    placeholder="+1 555 000 0000"
-                  />
-                </Field>
-                <Field label="Location">
-                  <input
-                    value={draft.location ?? ""}
-                    onChange={(e) => set({ location: e.target.value })}
-                    placeholder="Milan, Italy"
-                  />
-                </Field>
-                <Field label="Website">
-                  <input
-                    value={draft.website ?? ""}
-                    onChange={(e) => set({ website: e.target.value })}
-                    placeholder="https://janedoe.dev"
-                  />
-                </Field>
-                <Field label="LinkedIn">
-                  <input
-                    value={draft.linkedin ?? ""}
-                    onChange={(e) => set({ linkedin: e.target.value })}
-                    placeholder="linkedin.com/in/jane"
-                  />
-                </Field>
-              </FieldGrid>
-              <div style={{ marginTop: 12 }}>
-                <Field label="Professional Summary">
-                  <textarea
-                    value={draft.summary ?? ""}
-                    onChange={(e) => set({ summary: e.target.value })}
-                    placeholder="Brief professional summary…"
-                    rows={3}
-                  />
-                </Field>
+        <div className={styles.editor__form_body}>
+          {/* Personal info */}
+          <section className={styles["form-section"]}>
+            <div className={styles["form-section__title"]}>Personal</div>
+            <div className={styles["form-section__grid"]}>
+              <div className={styles.field}>
+                <label>Full Name</label>
+                <input
+                  value={draft.full_name}
+                  onChange={(e) => set({ full_name: e.target.value })}
+                  placeholder="Jane Doe"
+                />
               </div>
-            </FormSection>
+              <div className={styles.field}>
+                <label>Email</label>
+                <input
+                  type="email"
+                  value={draft.email}
+                  onChange={(e) => set({ email: e.target.value })}
+                  placeholder="jane@example.com"
+                />
+              </div>
+              <div className={styles.field}>
+                <label>Phone</label>
+                <input
+                  value={draft.phone ?? ""}
+                  onChange={(e) => set({ phone: e.target.value })}
+                  placeholder="+1 555 000 0000"
+                />
+              </div>
+              <div className={styles.field}>
+                <label>Location</label>
+                <input
+                  value={draft.location ?? ""}
+                  onChange={(e) => set({ location: e.target.value })}
+                  placeholder="Milan, Italy"
+                />
+              </div>
+              <div className={styles.field}>
+                <label>Website</label>
+                <input
+                  value={draft.website ?? ""}
+                  onChange={(e) => set({ website: e.target.value })}
+                  placeholder="https://janedoe.dev"
+                />
+              </div>
+              <div className={styles.field}>
+                <label>LinkedIn</label>
+                <input
+                  value={draft.linkedin ?? ""}
+                  onChange={(e) => set({ linkedin: e.target.value })}
+                  placeholder="linkedin.com/in/jane"
+                />
+              </div>
+            </div>
+            <div className={styles.field} style={{ marginTop: 12 }}>
+              <label>Professional Summary</label>
+              <textarea
+                value={draft.summary ?? ""}
+                onChange={(e) => set({ summary: e.target.value })}
+                placeholder="Brief professional summary…"
+                rows={3}
+              />
+            </div>
           </section>
 
           {/* Work Experience */}
           <section>
-            <SectionTitle>Experience</SectionTitle>
+            <div className={styles["section-title"]}>Experience</div>
             {(draft.work_experience || []).map((w, i) => (
               <div className={styles["entry-card"]} key={i}>
                 <div className={styles["entry-card__head"]}>
@@ -394,44 +338,45 @@ const EditorPage: React.FC = () => {
                   </button>
                 </div>
                 <div className={styles["entry-card__grid"]}>
-                  <Field label="Company">
+                  <div className={styles.field}>
+                    <label>Company</label>
                     <input
                       value={w.company}
                       onChange={(e) => setWork(i, { company: e.target.value })}
                     />
-                  </Field>
-                  <Field label="Position">
+                  </div>
+                  <div className={styles.field}>
+                    <label>Position</label>
                     <input
                       value={w.position}
                       onChange={(e) => setWork(i, { position: e.target.value })}
                     />
-                  </Field>
-                  <Field label="Start (YYYY-MM)">
+                  </div>
+                  <div className={styles.field}>
+                    <label>Start (YYYY-MM)</label>
                     <input
                       value={w.start_date}
-                      onChange={(e) =>
-                        setWork(i, { start_date: e.target.value })
-                      }
+                      onChange={(e) => setWork(i, { start_date: e.target.value })}
                       placeholder="2022-06"
                     />
-                  </Field>
-                  <Field label="End (leave blank = Present)">
+                  </div>
+                  <div className={styles.field}>
+                    <label>End (leave blank = Present)</label>
                     <input
                       value={w.end_date ?? ""}
                       onChange={(e) => setWork(i, { end_date: e.target.value })}
                       placeholder="2024-01"
                     />
-                  </Field>
+                  </div>
                 </div>
-                <Field label="Description">
+                <div className={styles.field}>
+                  <label>Description</label>
                   <textarea
                     value={w.description}
-                    onChange={(e) =>
-                      setWork(i, { description: e.target.value })
-                    }
+                    onChange={(e) => setWork(i, { description: e.target.value })}
                     rows={2}
                   />
-                </Field>
+                </div>
               </div>
             ))}
             <button
@@ -449,46 +394,47 @@ const EditorPage: React.FC = () => {
 
           {/* Education */}
           <section>
-            <SectionTitle>Education</SectionTitle>
+            <div className={styles["section-title"]}>Education</div>
             {draft.education.map((e, i) => (
               <div className={styles["entry-card"]} key={i}>
                 <div className={styles["entry-card__head"]}>
                   <span>Degree {i + 1}</span>
-                  <button onClick={() => removeItem("education", i)}>
+                  <button
+                    className={styles["entry-card__remove"]}
+                    onClick={() => removeItem("education", i)}
+                  >
                     Remove
                   </button>
                 </div>
                 <div className={styles["entry-card__grid"]}>
-                  <Field label="Institution">
+                  <div className={styles.field}>
+                    <label>Institution</label>
                     <input
                       value={e.institution}
-                      onChange={(ev) =>
-                        setEdu(i, { institution: ev.target.value })
-                      }
+                      onChange={(ev) => setEdu(i, { institution: ev.target.value })}
                     />
-                  </Field>
-                  <Field label="Degree">
+                  </div>
+                  <div className={styles.field}>
+                    <label>Degree</label>
                     <input
                       value={e.degree}
                       onChange={(ev) => setEdu(i, { degree: ev.target.value })}
                     />
-                  </Field>
-                  <Field label="Start">
+                  </div>
+                  <div className={styles.field}>
+                    <label>Start</label>
                     <input
                       value={e.start_date}
-                      onChange={(ev) =>
-                        setEdu(i, { start_date: ev.target.value })
-                      }
+                      onChange={(ev) => setEdu(i, { start_date: ev.target.value })}
                     />
-                  </Field>
-                  <Field label="End">
+                  </div>
+                  <div className={styles.field}>
+                    <label>End</label>
                     <input
                       value={e.end_date ?? ""}
-                      onChange={(ev) =>
-                        setEdu(i, { end_date: ev.target.value })
-                      }
+                      onChange={(ev) => setEdu(i, { end_date: ev.target.value })}
                     />
-                  </Field>
+                  </div>
                 </div>
               </div>
             ))}
@@ -507,56 +453,27 @@ const EditorPage: React.FC = () => {
 
           {/* Skills */}
           <section>
-            <SectionTitle>Skills</SectionTitle>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div className={styles["section-title"]}>Skills</div>
+            <div className={styles["skills-list"]}>
               {draft.skills.map((s, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    border: "1px solid #e0e0e5",
-                    borderRadius: 6,
-                    padding: "4px 10px",
-                    background: "#fff",
-                  }}
-                >
+                <div key={i} className={styles["skill-chip"]}>
                   <input
                     value={s.name}
                     onChange={(e) => setSkill(i, { name: e.target.value })}
                     placeholder="Skill"
-                    style={{
-                      border: "none",
-                      outline: "none",
-                      width: 90,
-                      fontSize: "0.875rem",
-                    }}
                   />
                   <select
                     value={s.level}
                     onChange={(e) =>
                       setSkill(i, { level: e.target.value as Skill["level"] })
                     }
-                    style={{
-                      border: "none",
-                      outline: "none",
-                      fontSize: "0.75rem",
-                      color: "#6e6e73",
-                      background: "transparent",
-                    }}
                   >
                     <option value="beginner">Beginner</option>
                     <option value="intermediate">Intermediate</option>
                     <option value="advanced">Advanced</option>
                     <option value="expert">Expert</option>
                   </select>
-                  <button
-                    style={{ color: "#ff3b30", fontSize: 14, lineHeight: 1 }}
-                    onClick={() => removeItem("skills", i)}
-                  >
-                    ×
-                  </button>
+                  <button onClick={() => removeItem("skills", i)}>×</button>
                 </div>
               ))}
             </div>
@@ -574,9 +491,7 @@ const EditorPage: React.FC = () => {
       </div>
 
       {/* Preview pane */}
-      {/* Preview pane */}
-      <div className={styles["editor__preview-pane"]}>
-        {/* Добавь id="printable_area" этому диву */}
+      <div className={styles.editor__preview_pane}>
         <div
           ref={contentRef}
           id="printable_area"
@@ -588,46 +503,5 @@ const EditorPage: React.FC = () => {
     </div>
   );
 };
-
-// ─── Small helper components (keep in same file — no extra re-renders) ────────
-
-const FormSection: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <>{children}</>
-);
-
-const FieldGrid: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-    {children}
-  </div>
-);
-
-const Field: React.FC<{ label: string; children: React.ReactNode }> = ({
-  label,
-  children,
-}) => (
-  <div className="field">
-    <label>{label}</label>
-    {children}
-  </div>
-);
-
-const SectionTitle: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => (
-  <div
-    style={{
-      fontSize: "0.75rem",
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: "0.08em",
-      color: "#6e6e73",
-      marginBottom: 14,
-      paddingBottom: 8,
-      borderBottom: "1px solid #e0e0e5",
-    }}
-  >
-    {children}
-  </div>
-);
 
 export default EditorPage;
