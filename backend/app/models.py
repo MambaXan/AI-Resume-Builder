@@ -29,12 +29,20 @@ class Experience(Base):
     id = Column(Integer, primary_key=True, index=True)
     company = Column(String)
     position = Column(String)
+    location = Column(String, nullable=True)
+    start_date = Column(String, nullable=True)
+    end_date = Column(String, nullable=True)
+    description = Column(Text, nullable=True)
+
     resume_id = Column(Integer, ForeignKey("resumes.id"))
     resume = relationship("Resume", back_populates="experiences")
+
 
 class Skill(Base):
     __tablename__ = "skills"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
+    level = Column(String, nullable=True)
+
     resume_id = Column(Integer, ForeignKey("resumes.id"))
     resume = relationship("Resume", back_populates="skills")
