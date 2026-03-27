@@ -95,7 +95,7 @@ const EditorPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/api/generate-description",
+        "https://resume-builder-618b.onrender.com/api/generate-description",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -389,18 +389,20 @@ const EditorPage: React.FC = () => {
                       {/* КНОПКА AI ГЕНЕРАЦИИ */}
                       <button
                         type="button"
-                        className={styles["ai-btn"]} // Добавь этот класс в SCSS или используй inline
-                        style={{
-                          padding: "0 12px",
-                          borderRadius: "6px",
-                          border: "1px solid #e2e2e7",
-                          background: "#f5f5f7",
-                          cursor: "pointer",
-                        }}
                         onClick={() =>
                           handleAIGenerate(i, w.position, w.company)
                         }
                         disabled={generatingAI[i]}
+                        style={{
+                          padding: "0 15px",
+                          backgroundColor: "#0070f3",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "6px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          fontWeight: "bold",
+                        }}
                       >
                         {generatingAI[i] ? "⏳" : "AI ✨"}
                       </button>
