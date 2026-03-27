@@ -6,6 +6,8 @@ from jose import jwt, JWTError
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
+from pydantic import BaseModel
+from .ai_service import generate_job_description
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -14,6 +16,16 @@ models.Base.metadata.create_all(bind=engine)
 print("Tables created successfully!")
 
 app = FastAPI()
+
+
+class AIRequest(BaseModel):
+    position: str
+    company: Optional[str] = None
+
+
+class AIResponse(BaseModel):
+    description: str
+
 
 origins = [
     "http://localhost:3000",
@@ -150,3 +162,14 @@ def update_user_resume(
             status_code=404, detail="Resume not found or access denied")
 
     return updated
+
+
+@app.post("/api/generate-description", response_model=AIResponse)
+def api_generate_description(request: AIRequest):
+    if not request.position:
+        raise HTTPException(status_code=400, detail="Position is required")
+
+    generated_text = generate_job_description(
+        request.position, request.company)
+
+    return AIResponse(description=generated_text)

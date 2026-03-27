@@ -5,9 +5,9 @@
 .editor {
   display: grid;
   grid-template-columns: 280px 1.2fr 1fr;
-  height: 100vh; /* Строго высота экрана */
-  width: 100vw; /* Строго ширина экрана */
-  overflow: hidden; /* ЗАПРЕЩАЕМ общий скролл страницы */
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
   background: #fff;
 }
 
@@ -60,8 +60,8 @@
 
 // ─── Form pane ──────────────────────────────────────────────────────────────
 .editor__form_pane {
-  height: 100vh; /* Высота во весь экран */
-  overflow-y: auto; /* Скролл только тут */
+  height: 100vh;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -121,13 +121,11 @@
 .editor__preview_pane {
   height: 100vh;
   background-color: #e8e8ed;
-
-  /* ВОТ ТУТ МЕНЯЕМ */
-  overflow: hidden; /* УБИРАЕМ СКРОЛЛ ПОЛНОСТЬЮ */
+  overflow: hidden;
 
   display: flex;
   justify-content: center;
-  align-items: center; /* Центрируем лист и по вертикали тоже */
+  align-items: center;
   padding: 0;
   position: relative;
 }
@@ -148,7 +146,7 @@
   }
 }
 
-// ─── Form sections (общие стили) ───────────────────────────────────────────
+// ─── Form sections ───────────────────────────────────────────
 .form-section {
   &__title {
     font-size: 0.75rem;

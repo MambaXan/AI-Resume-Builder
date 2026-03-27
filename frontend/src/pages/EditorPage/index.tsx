@@ -7,8 +7,8 @@ import AuthModal from "../../components/AuthModal";
 import ResumeList from "../../components/ResumeList";
 import ResumePreview from "../../components/ResumePreview";
 import styles from "./EditorPage.module.scss";
+// import axios from "axios";
 
-// ========== Вспомогательные функции ==========
 const blankResume = (): Resume => ({
   title: "",
   full_name: "",
@@ -63,12 +63,14 @@ const EditorPage: React.FC = () => {
   const [draft, setDraft] = useState<Resume>(blankResume());
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [generatingAI, setGeneratingAI] = useState<any>({});
 
   const debouncedDraft = useDebounce(draft, 900);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Печать
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: draft.title || "Resume",
@@ -81,27 +83,54 @@ const EditorPage: React.FC = () => {
     `,
   });
 
-  // Обработка неавторизованного доступа
+  const handleAIGenerate = async (
+    index: number,
+    position: string,
+    company: string
+  ) => {
+    if (!position) return alert("Сначала введи должность, бро!");
+
+    // Прямо здесь указываем (prev: any)
+    setGeneratingAI((prev: any) => ({ ...prev, [index]: true }));
+
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/generate-description",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ position, company: company || "" }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Бэкенд приуныл");
+
+      const data = await response.json();
+      setWork(index, { description: data.description });
+    } catch (error) {
+      console.error(error);
+      alert("Ошибка! Проверь, запущен ли Python бэкенд.");
+    } finally {
+      setGeneratingAI((prev: any) => ({ ...prev, [index]: false }));
+    }
+  };
+
   useEffect(() => {
     onUnauthorized(() => setAuthed(false));
   }, []);
 
-  // Загрузка списка резюме
   const loadResumes = useCallback(async () => {
     if (!authed) return;
     try {
       const list = await resumeApi.list();
       setResumes(list);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [authed]);
 
   useEffect(() => {
     loadResumes();
   }, [loadResumes]);
 
-  // Ручное сохранение
   const handleSaveManual = async () => {
     if (!draft.title?.trim()) {
       setSaveMsg("Resume title is required");
@@ -142,7 +171,6 @@ const EditorPage: React.FC = () => {
     }
   };
 
-  // Автосохранение (только если есть id)
   useEffect(() => {
     if (!authed || !debouncedDraft.id) return;
     const autoSave = async () => {
@@ -157,7 +185,6 @@ const EditorPage: React.FC = () => {
     autoSave();
   }, [debouncedDraft, authed]);
 
-  // Общие сеттеры
   const set = (patch: Partial<Resume>) => setDraft((d) => ({ ...d, ...patch }));
 
   const setWork = (i: number, patch: Partial<WorkExperience>) =>
@@ -337,29 +364,60 @@ const EditorPage: React.FC = () => {
                     Remove
                   </button>
                 </div>
+
                 <div className={styles["entry-card__grid"]}>
                   <div className={styles.field}>
                     <label>Company</label>
                     <input
                       value={w.company}
                       onChange={(e) => setWork(i, { company: e.target.value })}
+                      placeholder="Напр. Google"
                     />
                   </div>
+
                   <div className={styles.field}>
                     <label>Position</label>
-                    <input
-                      value={w.position}
-                      onChange={(e) => setWork(i, { position: e.target.value })}
-                    />
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <input
+                        style={{ flex: 1 }}
+                        value={w.position}
+                        onChange={(e) =>
+                          setWork(i, { position: e.target.value })
+                        }
+                        placeholder="Напр. Frontend Developer"
+                      />
+                      {/* КНОПКА AI ГЕНЕРАЦИИ */}
+                      <button
+                        type="button"
+                        className={styles["ai-btn"]} // Добавь этот класс в SCSS или используй inline
+                        style={{
+                          padding: "0 12px",
+                          borderRadius: "6px",
+                          border: "1px solid #e2e2e7",
+                          background: "#f5f5f7",
+                          cursor: "pointer",
+                        }}
+                        onClick={() =>
+                          handleAIGenerate(i, w.position, w.company)
+                        }
+                        disabled={generatingAI[i]}
+                      >
+                        {generatingAI[i] ? "⏳" : "AI ✨"}
+                      </button>
+                    </div>
                   </div>
+
                   <div className={styles.field}>
                     <label>Start (YYYY-MM)</label>
                     <input
                       value={w.start_date}
-                      onChange={(e) => setWork(i, { start_date: e.target.value })}
+                      onChange={(e) =>
+                        setWork(i, { start_date: e.target.value })
+                      }
                       placeholder="2022-06"
                     />
                   </div>
+
                   <div className={styles.field}>
                     <label>End (leave blank = Present)</label>
                     <input
@@ -369,16 +427,21 @@ const EditorPage: React.FC = () => {
                     />
                   </div>
                 </div>
+
                 <div className={styles.field}>
                   <label>Description</label>
                   <textarea
                     value={w.description}
-                    onChange={(e) => setWork(i, { description: e.target.value })}
-                    rows={2}
+                    onChange={(e) =>
+                      setWork(i, { description: e.target.value })
+                    }
+                    rows={6} // Увеличил, чтобы ИИ текст влезал
+                    placeholder="Нажми 'AI ✨' после ввода должности, чтобы сгенерировать описание..."
                   />
                 </div>
               </div>
             ))}
+
             <button
               className={styles["add-btn"]}
               onClick={() =>
@@ -411,7 +474,9 @@ const EditorPage: React.FC = () => {
                     <label>Institution</label>
                     <input
                       value={e.institution}
-                      onChange={(ev) => setEdu(i, { institution: ev.target.value })}
+                      onChange={(ev) =>
+                        setEdu(i, { institution: ev.target.value })
+                      }
                     />
                   </div>
                   <div className={styles.field}>
@@ -425,14 +490,18 @@ const EditorPage: React.FC = () => {
                     <label>Start</label>
                     <input
                       value={e.start_date}
-                      onChange={(ev) => setEdu(i, { start_date: ev.target.value })}
+                      onChange={(ev) =>
+                        setEdu(i, { start_date: ev.target.value })
+                      }
                     />
                   </div>
                   <div className={styles.field}>
                     <label>End</label>
                     <input
                       value={e.end_date ?? ""}
-                      onChange={(ev) => setEdu(i, { end_date: ev.target.value })}
+                      onChange={(ev) =>
+                        setEdu(i, { end_date: ev.target.value })
+                      }
                     />
                   </div>
                 </div>
