@@ -25,19 +25,22 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
-    # Убираем лишние вложенные списки, так как база их не съест в таком виде прямо в конструктор
-    resume_data = resume.dict(
-        exclude={"work_experience", "education", "skills"})
-
-    # Теперь передаем данные в модель, где имена полей совпадают
+    # 1. Берем только плоские поля (имя, почта и т.д.), отсекая списки
+    resume_data = resume.dict(exclude={'work_experience', 'education', 'skills'})
+    
+    # 2. Создаем объект Resume
     db_resume = models.Resume(
         **resume_data,
-        full_name=full_name,  # Было name
         user_id=user_id
     )
+    
     db.add(db_resume)
     db.commit()
     db.refresh(db_resume)
+    
+    # 3. (Опционально) Если хочешь сохранять опыт и навыки сразу — 
+    # здесь нужно будет пройтись циклом по resume.work_experience
+    
     return db_resume
 
 

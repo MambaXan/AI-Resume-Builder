@@ -43,10 +43,10 @@ def generate_job_description(position: str, company: str = None) -> str:
             temperature=0.7,
             max_tokens=500
         )
-
-        result = response.choices[0].message.content.strip()
-        return result  # Если всё успешно, выходим здесь
+        # ВАЖНО: return должен быть ВНУТРИ try
+        return response.choices[0].message.content.strip()
 
     except Exception as e:
         print(f"!!! ОШИБКА ГРОКА: {str(e)}")
-        return "• Ошибка генерации. Проверь логи бэкенда."  # Если упало, выходим здесь
+        # Этот return сработает ТОЛЬКО если случится ошибка
+        return "• Ошибка генерации. Проверь логи бэкенда."
