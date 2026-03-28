@@ -25,7 +25,6 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
-    # Убираем списки, чтобы FastAPI/SQLAlchemy не ругались на несоответствие типов
     resume_data = resume.dict(exclude={'work_experience', 'education', 'skills'})
     
     db_resume = models.Resume(
