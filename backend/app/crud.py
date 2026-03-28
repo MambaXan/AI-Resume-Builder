@@ -25,14 +25,18 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
-    db_resume = models.Resume(**resume.dict(), user_id=user_id)
+    resume_data = resume.dict()
 
+    full_name = resume_data.pop("full_name", None)
+
+    db_resume = models.Resume(
+        **resume_data,
+        name=full_name,
+        user_id=user_id
+    )
     db.add(db_resume)
-
     db.commit()
-
     db.refresh(db_resume)
-
     return db_resume
 
 

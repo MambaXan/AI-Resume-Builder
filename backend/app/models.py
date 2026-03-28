@@ -16,8 +16,18 @@ class Resume(Base):
     __tablename__ = "resumes"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
+
+    full_name = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    phone = Column(String, nullable=True)
+    location = Column(String, nullable=True)
+    website = Column(String, nullable=True)
+    linkedin = Column(String, nullable=True)
+    summary = Column(Text, nullable=True)
+
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="resumes")
+
     experiences = relationship(
         "Experience", back_populates="resume", cascade="all, delete-orphan")
     skills = relationship("Skill", back_populates="resume",
