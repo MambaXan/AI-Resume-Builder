@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 
+
 class ExperienceBase(BaseModel):
     company: str
     position: str
@@ -9,8 +10,10 @@ class ExperienceBase(BaseModel):
     end_date: Optional[str] = None
     description: Optional[str] = None
 
+
 class ExperienceCreate(ExperienceBase):
     pass
+
 
 class Experience(ExperienceBase):
     id: int
@@ -19,12 +22,15 @@ class Experience(ExperienceBase):
     class Config:
         from_attributes = True
 
+
 class SkillBase(BaseModel):
     name: str
     level: Optional[str] = None
 
+
 class SkillCreate(SkillBase):
     pass
+
 
 class Skill(SkillBase):
     id: int
@@ -33,14 +39,27 @@ class Skill(SkillBase):
     class Config:
         from_attributes = True
 
+
 class ResumeBase(BaseModel):
     title: str = "Untitled Resume"
     full_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
 
-class ResumeCreate(ResumeBase):
-    title: str = Field(..., min_length=1, max_length=100)
+
+class ResumeCreate(BaseModel):
+    title: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+    summary: Optional[str] = None
+    work_experience: List[WorkExperienceCreate] = []
+    education: List[EducationCreate] = []
+    skills: List[SkillCreate] = []
+
 
 class Resume(ResumeBase):
     id: int
@@ -51,11 +70,14 @@ class Resume(ResumeBase):
     class Config:
         from_attributes = True
 
+
 class UserBase(BaseModel):
     email: EmailStr
 
+
 class UserCreate(UserBase):
     password: str
+
 
 class User(UserBase):
     id: int

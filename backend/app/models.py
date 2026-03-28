@@ -23,7 +23,7 @@ class Resume(Base):
     location = Column(String, nullable=True)
     website = Column(String, nullable=True)
     linkedin = Column(String, nullable=True)
-    summary = Column(Text, nullable=True)
+    summary = Column(String, nullable=True)
 
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="resumes")
