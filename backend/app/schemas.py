@@ -57,8 +57,8 @@ class ResumeCreate(BaseModel):
     linkedin: Optional[str] = None
     summary: Optional[str] = None
     # Имена должны СТРОГО совпадать с названиями классов выше
-    work_experience: List[ExperienceCreate] = [] # Было WorkExperienceCreate
-    education: List[ExperienceBase] = [] # Убедись, что класс EducationCreate/Base есть выше
+    work_experience: List[ExperienceCreate] = [] 
+    education: List[ExperienceCreate] = [] # Или создай EducationCreate, если поля другие
     skills: List[SkillCreate] = []
 
 
