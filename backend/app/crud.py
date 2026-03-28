@@ -25,13 +25,14 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
-    resume_data = resume.dict()
+    # Убираем лишние вложенные списки, так как база их не съест в таком виде прямо в конструктор
+    resume_data = resume.dict(
+        exclude={"work_experience", "education", "skills"})
 
-    full_name = resume_data.pop("full_name", None)
-
+    # Теперь передаем данные в модель, где имена полей совпадают
     db_resume = models.Resume(
         **resume_data,
-        name=full_name,
+        full_name=full_name,  # Было name
         user_id=user_id
     )
     db.add(db_resume)

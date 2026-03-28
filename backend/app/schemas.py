@@ -61,12 +61,11 @@ class ResumeCreate(BaseModel):
     skills: List[SkillCreate] = []
 
 
-class Resume(ResumeBase):
+class Resume(ResumeCreate): # Наследуемся от ResumeCreate, чтобы были все поля
     id: int
     user_id: int
     experiences: List[Experience] = []
     skills: List[Skill] = []
-
     class Config:
         from_attributes = True
 

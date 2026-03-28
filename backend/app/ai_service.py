@@ -45,8 +45,8 @@ def generate_job_description(position: str, company: str = None) -> str:
         )
 
         result = response.choices[0].message.content.strip()
-        return result
+        return result  # Если всё успешно, выходим здесь
 
     except Exception as e:
         print(f"!!! ОШИБКА ГРОКА: {str(e)}")
-    return "• Ошибка генерации. Проверь логи бэкенда."
+        return "• Ошибка генерации. Проверь логи бэкенда."  # Если упало, выходим здесь

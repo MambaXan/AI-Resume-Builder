@@ -15,6 +15,9 @@ print("Connecting to database and creating tables...")
 models.Base.metadata.create_all(bind=engine)
 print("Tables created successfully!")
 
+models.Base.metadata.drop_all(bind=engine) 
+models.Base.metadata.create_all(bind=engine)
+
 app = FastAPI()
 
 
