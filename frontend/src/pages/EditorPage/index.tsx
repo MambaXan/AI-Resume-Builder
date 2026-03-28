@@ -59,7 +59,8 @@ function useDebounce<T>(value: T, delay = 800): T {
 // ========== Компонент страницы ==========
 const EditorPage: React.FC = () => {
   const [authed, setAuthed] = useState(!!getToken());
-  const [resumes, setResumes] = useState<Resume[]>([]);
+  const [resumes, setResumes] = useState<any[]>([]);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [draft, setDraft] = useState<Resume>(blankResume());
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState("");
@@ -74,11 +75,25 @@ const EditorPage: React.FC = () => {
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: draft.title || "Resume",
+    // Убираем лишние отступы самого браузера и форсируем размер
     pageStyle: `
-      @page { size: A4; margin: 0 !important; }
+      @page { 
+        size: A4; 
+        margin: 0mm !important; 
+      }
       @media print {
-        body { -webkit-print-color-adjust: exact; }
-        #printable_area { padding: 10mm 15mm !important; }
+        body { 
+          margin: 0 !important; 
+          -webkit-print-color-adjust: exact; 
+        }
+        #printable_area {
+          width: 210mm !important; /* Строго ширина A4 */
+          min-height: 297mm !important;
+          padding: 20mm !important; /* Поля внутри листа */
+          margin: 0 auto !important;
+          box-shadow: none !important;
+          transform: scale(1) !important; /* Убираем сжатие */
+        }
       }
     `,
   });
@@ -90,7 +105,6 @@ const EditorPage: React.FC = () => {
   ) => {
     if (!position) return alert("Сначала введи должность, бро!");
 
-    // Прямо здесь указываем (prev: any)
     setGeneratingAI((prev: any) => ({ ...prev, [index]: true }));
 
     try {
@@ -131,22 +145,17 @@ const EditorPage: React.FC = () => {
     loadResumes();
   }, [loadResumes]);
 
-  const handleSaveManual = async () => {
-    if (!draft.title?.trim()) {
-      setSaveMsg("Resume title is required");
+  const handleSave = async () => {
+    // 1. Проверки
+    if (!draft.title?.trim() || !draft.full_name?.trim()) {
+      setSaveMsg("Title and Name are required");
       setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 2000);
-      return;
-    }
-    if (!draft.full_name?.trim()) {
-      setSaveMsg("Name is required");
-      setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 2000);
       return;
     }
 
     setSaving(true);
     setSaveStatus("saving");
+
     try {
       const saved = draft.id
         ? await resumeApi.update(draft.id, draft)
@@ -160,12 +169,13 @@ const EditorPage: React.FC = () => {
       });
 
       setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+
       await loadResumes();
+
+      setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (e: any) {
-      setSaveMsg(e.detail ?? "Error");
+      setSaveMsg(e.detail ?? "Error saving");
       setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 3000);
     } finally {
       setSaving(false);
     }
@@ -226,6 +236,17 @@ const EditorPage: React.FC = () => {
     setAuthed(false);
   };
 
+  const loadResume = useCallback(async () => {
+    if (!authed) return;
+    try {
+      const list = await resumeApi.list();
+      console.log("Список резюме с бэка:", list);
+      setResumes(list);
+    } catch (e) {
+      console.error("Ошибка загрузки списка:", e);
+    }
+  }, [authed]);
+
   if (!authed) return <AuthModal onSuccess={() => setAuthed(true)} />;
 
   return (
@@ -244,14 +265,7 @@ const EditorPage: React.FC = () => {
           <ResumeList
             resumes={resumes}
             activeId={draft.id}
-            onSelect={(selectedResume) => {
-              setDraft({
-                ...selectedResume,
-                work_experience: selectedResume.work_experience || [],
-                education: selectedResume.education || [],
-                skills: selectedResume.skills || [],
-              });
-            }}
+            onSelect={loadResume}
             onDelete={handleDelete}
             onNew={() => setDraft(blankResume())}
           />
@@ -276,7 +290,7 @@ const EditorPage: React.FC = () => {
             </button>
             <button
               className="btn btn--primary"
-              onClick={handleSaveManual}
+              onClick={handleSave}
               disabled={saving}
             >
               {saving ? "Saving..." : "Save"}
