@@ -161,11 +161,21 @@ class ResumeCreate(BaseModel):
 # Схема для выдачи данных
 
 
-class Resume(ResumeCreate):
+class Resume(BaseModel):  # Наследуемся от BaseModel напрямую, если ResumeBase нет
     id: int
     user_id: int
-    # Используем названия связей из models.py
-    experiences: List[Experience] = []
+    title: str
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    website: Optional[str] = None
+    linkedin: Optional[str] = None
+    summary: Optional[str] = None
+
+    # Эти имена должны СТРОГО совпадать с именами relationship в models.py
+    work_experience: List[Experience] = []
+    education: List[Education] = []
     skills: List[Skill] = []
 
     class Config:

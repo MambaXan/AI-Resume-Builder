@@ -16,7 +16,6 @@ class Resume(Base):
     __tablename__ = "resumes"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)
-
     full_name = Column(String, nullable=True)
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
@@ -28,10 +27,17 @@ class Resume(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="resumes")
 
-    experiences = relationship(
+    # Имена связей должны совпадать с ключами на фронте (work_experience)
+    work_experience = relationship(
         "Experience", back_populates="resume", cascade="all, delete-orphan")
+    education = relationship(
+        "Education", back_populates="resume", cascade="all, delete-orphan")
     skills = relationship("Skill", back_populates="resume",
                           cascade="all, delete-orphan")
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
 
 
 class Experience(Base):
@@ -45,7 +51,20 @@ class Experience(Base):
     description = Column(Text, nullable=True)
 
     resume_id = Column(Integer, ForeignKey("resumes.id"))
-    resume = relationship("Resume", back_populates="experiences")
+    resume = relationship("Resume", back_populates="work_experience")
+
+
+class Education(Base):
+    __tablename__ = "educations"
+    id = Column(Integer, primary_key=True, index=True)
+    institution = Column(String)
+    degree = Column(String)
+    field_of_study = Column(String, nullable=True)
+    start_date = Column(String, nullable=True)
+    end_date = Column(String, nullable=True)
+    gpa = Column(String, nullable=True)
+    resume_id = Column(Integer, ForeignKey("resumes.id"))
+    resume = relationship("Resume", back_populates="education")
 
 
 class Skill(Base):

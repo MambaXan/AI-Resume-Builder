@@ -75,7 +75,6 @@ const EditorPage: React.FC = () => {
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: draft.title || "Resume",
-    // Убираем лишние отступы самого браузера и форсируем размер
     pageStyle: `
       @page { 
         size: A4; 
@@ -133,7 +132,7 @@ const EditorPage: React.FC = () => {
     onUnauthorized(() => setAuthed(false));
   }, []);
 
-  const loadResumes = useCallback(async () => {
+  const loadAllResumes = useCallback(async () => {
     if (!authed) return;
     try {
       const list = await resumeApi.list();
@@ -142,11 +141,10 @@ const EditorPage: React.FC = () => {
   }, [authed]);
 
   useEffect(() => {
-    loadResumes();
-  }, [loadResumes]);
+    loadAllResumes();
+  }, [loadAllResumes]);
 
   const handleSave = async () => {
-    // 1. Проверки
     if (!draft.title?.trim() || !draft.full_name?.trim()) {
       setSaveMsg("Title and Name are required");
       setSaveStatus("error");
@@ -169,12 +167,11 @@ const EditorPage: React.FC = () => {
       });
 
       setSaveStatus("saved");
-
-      await loadResumes();
+      await loadAllResumes();
 
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (e: any) {
-      setSaveMsg(e.detail ?? "Error saving");
+      setSaveMsg(e.response?.data?.detail ?? "Error saving");
       setSaveStatus("error");
     } finally {
       setSaving(false);
@@ -228,7 +225,7 @@ const EditorPage: React.FC = () => {
   const handleDelete = async (id: number) => {
     await resumeApi.delete(id);
     if (draft.id === id) setDraft(blankResume());
-    await loadResumes();
+    await loadAllResumes();
   };
 
   const handleLogout = () => {
@@ -236,16 +233,21 @@ const EditorPage: React.FC = () => {
     setAuthed(false);
   };
 
-  const loadResume = useCallback(async () => {
-    if (!authed) return;
+  const loadSingleResume = async (id: number) => { // Теперь она строго принимает число
     try {
-      const list = await resumeApi.list();
-      console.log("Список резюме с бэка:", list);
-      setResumes(list);
+      const data: any = await resumeApi.get(id); // Используем any, чтобы TS не ругался на ключи
+      
+      setDraft({
+        ...data,
+        // Собираем данные: проверяем оба варианта имени ключа на всякий случай
+        work_experience: data.work_experience || data.experiences || [],
+        education: data.education || [],
+        skills: data.skills || [],
+      });
     } catch (e) {
-      console.error("Ошибка загрузки списка:", e);
+      console.error("Error loading resume:", e);
     }
-  }, [authed]);
+  };
 
   if (!authed) return <AuthModal onSuccess={() => setAuthed(true)} />;
 
@@ -262,13 +264,14 @@ const EditorPage: React.FC = () => {
           </button>
         </div>
         <div className={styles["editor__sidebar-list"]}>
-          <ResumeList
-            resumes={resumes}
-            activeId={draft.id}
-            onSelect={loadResume}
-            onDelete={handleDelete}
-            onNew={() => setDraft(blankResume())}
-          />
+        <ResumeList
+  resumes={resumes}
+  activeId={draft.id}
+  // Передаем id из объекта r, который прокидывает сайдбар
+  onSelect={(r: Resume) => r.id && loadSingleResume(r.id)} 
+  onDelete={handleDelete}
+  onNew={() => setDraft(blankResume())}
+/>
         </div>
       </aside>
 
@@ -451,7 +454,7 @@ const EditorPage: React.FC = () => {
                     onChange={(e) =>
                       setWork(i, { description: e.target.value })
                     }
-                    rows={6} // Увеличил, чтобы ИИ текст влезал
+                    rows={6}
                     placeholder="Нажми 'AI ✨' после ввода должности, чтобы сгенерировать описание..."
                   />
                 </div>
