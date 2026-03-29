@@ -129,39 +129,6 @@ class Skill(SkillBase):
     class Config:
         from_attributes = True
 
-# ГЛАВНОЕ: Схема создания резюме (должна совпадать с фронтом!)
-
-
-class ResumeCreate(BaseModel):
-    title: str
-    full_name: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    location: Optional[str] = None
-    website: Optional[str] = None
-    linkedin: Optional[str] = None
-    summary: Optional[str] = None
-    # Проверь, как эти поля называются в твоем JSON на фронте!
-    # Если на фронте 'work_experience', то пишем так:
-    work_experience: List[ExperienceCreate] = []
-    education: List[ExperienceCreate] = []
-    skills: List[SkillCreate] = []
-
-# Схема для выдачи данных
-
-
-class Resume(ResumeCreate):
-    id: int
-    user_id: int
-    # Используем названия связей из models.py
-    experiences: List[Experience] = []
-    skills: List[Skill] = []
-
-    class Config:
-        from_attributes = True
-
-# Схема для образования (теперь поля совпадут с фронтом)
-
 
 class EducationBase(BaseModel):
     institution: str
@@ -190,3 +157,16 @@ class ResumeCreate(BaseModel):
     work_experience: List[ExperienceCreate] = []
     education: List[EducationCreate] = []  # Теперь используем EducationCreate!
     skills: List[SkillCreate] = []
+
+# Схема для выдачи данных
+
+
+class Resume(ResumeCreate):
+    id: int
+    user_id: int
+    # Используем названия связей из models.py
+    experiences: List[Experience] = []
+    skills: List[Skill] = []
+
+    class Config:
+        from_attributes = True
