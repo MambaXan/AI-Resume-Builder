@@ -170,3 +170,19 @@ class Resume(ResumeCreate):
 
     class Config:
         from_attributes = True
+
+
+class UserBase(BaseModel):
+    email: EmailStr
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class User(UserBase):
+    id: int
+    resumes: List[Resume] = []
+
+    class Config:
+        from_attributes = True
