@@ -35,20 +35,19 @@ def generate_job_description(position: str, company: str = None) -> str:
 
     try:
         response = client.chat.completions.create(
-            model="llama3-8b-8192",
+            model="llama-3.1-8b-instant",
             messages=[
-                {"role": "system", "content": "Ты - эксперт по написанию резюме."},
+                {"role": "system", "content": "Ты - эксперт по написанию резюме и карьерный консультант."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
             max_tokens=500
         )
-        # Убедись, что здесь нет лишних отступов и return стоит ПРАВИЛЬНО
+
         if response and response.choices:
             return response.choices[0].message.content.strip()
         return "• Ошибка: пустой ответ от ИИ."
 
     except Exception as e:
         print(f"!!! ОШИБКА ГРОКА: {str(e)}")
-        # Выведи саму ошибку, чтобы понять, что не так
         return f"• Ошибка генерации: {str(e)}"
