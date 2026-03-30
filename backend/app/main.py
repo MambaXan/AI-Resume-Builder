@@ -15,9 +15,6 @@ print("Connecting to database and creating tables...")
 models.Base.metadata.create_all(bind=engine)
 print("Tables created successfully!")
 
-# models.Base.metadata.drop_all(bind=engine) 
-# models.Base.metadata.create_all(bind=engine)
-
 app = FastAPI()
 
 
@@ -115,7 +112,7 @@ def get_resumes(
     current_user: models.User = Depends(get_current_user)
 ):
     """
-    Получаем список всех резюме текущего пользователя.
+    Get list of resumes of current user.
     """
     return crud.get_user_resumes(db, user_id=current_user.id)
 

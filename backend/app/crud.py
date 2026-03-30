@@ -25,23 +25,19 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
-    # 1. Создаем корень (само резюме) без вложенных списков
     db_resume = models.Resume(
         **resume.model_dump(exclude={'work_experience', 'education', 'skills'}),
         user_id=user_id
     )
     db.add(db_resume)
-    db.flush()  # Получаем ID, но не фиксируем транзакцию
+    db.flush()
 
-    # 2. Сохраняем Опыт
     for exp in resume.work_experience:
         db.add(models.Experience(**exp.model_dump(), resume_id=db_resume.id))
 
-    # 3. Сохраняем Обучение
     for edu in resume.education:
         db.add(models.Education(**edu.model_dump(), resume_id=db_resume.id))
 
-    # 4. Сохраняем Навыки
     for sk in resume.skills:
         db.add(models.Skill(**sk.model_dump(), resume_id=db_resume.id))
 
@@ -80,20 +76,21 @@ def delete_resume(db: Session, resume_id: int, user_id: int):
 
 
 def update_resume(db: Session, resume_id: int, user_id: int, update_data: schemas.ResumeCreate):
-    db_resume = db.query(models.Resume).filter(models.Resume.id == resume_id, models.Resume.user_id == user_id).first()
+    db_resume = db.query(models.Resume).filter(
+        models.Resume.id == resume_id, models.Resume.user_id == user_id).first()
     if not db_resume:
         return None
 
-    # 1. Обновляем корень (текстовые поля)
     for key, value in update_data.model_dump(exclude={'work_experience', 'education', 'skills'}).items():
         setattr(db_resume, key, value)
 
-    # 2. Перезаписываем вложенные таблицы (простой и надежный способ)
-    db.query(models.Experience).filter(models.Experience.resume_id == resume_id).delete()
+    db.query(models.Experience).filter(
+        models.Experience.resume_id == resume_id).delete()
     for exp in update_data.work_experience:
         db.add(models.Experience(**exp.model_dump(), resume_id=resume_id))
 
-    db.query(models.Education).filter(models.Education.resume_id == resume_id).delete()
+    db.query(models.Education).filter(
+        models.Education.resume_id == resume_id).delete()
     for edu in update_data.education:
         db.add(models.Education(**edu.model_dump(), resume_id=resume_id))
 

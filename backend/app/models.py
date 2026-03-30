@@ -27,7 +27,6 @@ class Resume(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="resumes")
 
-    # Имена связей должны совпадать с ключами на фронте (work_experience)
     work_experience = relationship(
         "Experience", back_populates="resume", cascade="all, delete-orphan")
     education = relationship(
