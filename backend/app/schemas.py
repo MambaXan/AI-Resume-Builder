@@ -41,8 +41,8 @@ class Skill(SkillBase):
 
 
 class EducationBase(BaseModel):
-    institution: str
-    degree: str
+    institution: str = ""
+    degree: str = ""
     field_of_study: Optional[str] = None
     start_date: Optional[str] = None
     end_date: Optional[str] = None
@@ -51,6 +51,15 @@ class EducationBase(BaseModel):
 
 class EducationCreate(EducationBase):
     pass
+
+
+
+class Education(EducationBase):
+    id: int
+    resume_id: int
+
+    class Config:
+        from_attributes = True
 
 
 class ResumeCreate(BaseModel):

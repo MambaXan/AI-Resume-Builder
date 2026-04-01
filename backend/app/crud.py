@@ -47,15 +47,20 @@ def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
 
 
 def get_user_resumes(db: Session, user_id: int):
-    return db.query(models.Resume).filter(models.Resume.user_id == user_id).all()
-
-
-def get_resumes(db: Session, user_id: int):
+    # Используй это имя в main.py
     return db.query(models.Resume).options(
         joinedload(models.Resume.work_experience),
         joinedload(models.Resume.education),
         joinedload(models.Resume.skills)
     ).filter(models.Resume.user_id == user_id).all()
+
+
+def get_resume(db: Session, resume_id: int, user_id: int): # Добавь user_id!
+    return db.query(models.Resume).options(
+        joinedload(models.Resume.work_experience),
+        joinedload(models.Resume.education),
+        joinedload(models.Resume.skills)
+    ).filter(models.Resume.id == resume_id, models.Resume.user_id == user_id).first()
 
 
 def delete_resume(db: Session, resume_id: int, user_id: int):
