@@ -25,19 +25,19 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
+    # Создаем основной объект
     db_resume = models.Resume(
         **resume.model_dump(exclude={'work_experience', 'education', 'skills'}),
         user_id=user_id
     )
     db.add(db_resume)
-    db.flush()
+    db.flush() # Получаем ID
 
+    # Добавляем вложенные данные, если они есть в запросе
     for exp in resume.work_experience:
         db.add(models.Experience(**exp.model_dump(), resume_id=db_resume.id))
-
     for edu in resume.education:
         db.add(models.Education(**edu.model_dump(), resume_id=db_resume.id))
-
     for sk in resume.skills:
         db.add(models.Skill(**sk.model_dump(), resume_id=db_resume.id))
 
@@ -50,15 +50,12 @@ def get_user_resumes(db: Session, user_id: int):
     return db.query(models.Resume).filter(models.Resume.user_id == user_id).all()
 
 
-def get_resume(db: Session, resume_id: int):
-    return db.query(models.Resume)\
-        .options(
-            joinedload(models.Resume.work_experience),
-            joinedload(models.Resume.education),
-            joinedload(models.Resume.skills)
-    )\
-        .filter(models.Resume.id == resume_id)\
-        .first()
+def get_resumes(db: Session, user_id: int):
+    return db.query(models.Resume).options(
+        joinedload(models.Resume.work_experience),
+        joinedload(models.Resume.education),
+        joinedload(models.Resume.skills)
+    ).filter(models.Resume.user_id == user_id).all()
 
 
 def delete_resume(db: Session, resume_id: int, user_id: int):
@@ -77,26 +74,34 @@ def delete_resume(db: Session, resume_id: int, user_id: int):
 
 def update_resume(db: Session, resume_id: int, user_id: int, update_data: schemas.ResumeCreate):
     db_resume = db.query(models.Resume).filter(
-        models.Resume.id == resume_id, models.Resume.user_id == user_id).first()
+        models.Resume.id == resume_id,
+        models.Resume.user_id == user_id
+    ).first()
+
     if not db_resume:
         return None
 
-    for key, value in update_data.model_dump(exclude={'work_experience', 'education', 'skills'}).items():
+    update_dict = update_data.model_dump(
+        exclude={'work_experience', 'education', 'skills'})
+    for key, value in update_dict.items():
         setattr(db_resume, key, value)
 
     db.query(models.Experience).filter(
         models.Experience.resume_id == resume_id).delete()
     for exp in update_data.work_experience:
-        db.add(models.Experience(**exp.model_dump(), resume_id=resume_id))
+        new_exp = models.Experience(**exp.model_dump(), resume_id=resume_id)
+        db.add(new_exp)
 
     db.query(models.Education).filter(
         models.Education.resume_id == resume_id).delete()
     for edu in update_data.education:
-        db.add(models.Education(**edu.model_dump(), resume_id=resume_id))
+        new_edu = models.Education(**edu.model_dump(), resume_id=resume_id)
+        db.add(new_edu)
 
     db.query(models.Skill).filter(models.Skill.resume_id == resume_id).delete()
     for sk in update_data.skills:
-        db.add(models.Skill(**sk.model_dump(), resume_id=resume_id))
+        new_sk = models.Skill(**sk.model_dump(), resume_id=resume_id)
+        db.add(new_sk)
 
     db.commit()
     db.refresh(db_resume)

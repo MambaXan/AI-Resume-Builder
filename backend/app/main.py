@@ -9,6 +9,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 from .ai_service import generate_job_description
 
+models.Base.metadata.create_all(bind=engine)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 print("Connecting to database and creating tables...")

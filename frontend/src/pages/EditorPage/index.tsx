@@ -136,8 +136,11 @@ const EditorPage: React.FC = () => {
     if (!authed) return;
     try {
       const list = await resumeApi.list();
+      console.log("DEBUG: Sidebar List", list);
       setResumes(list);
-    } catch {}
+    } catch (err) {
+      console.error("Ошибка загрузки списка:", err);
+    }
   }, [authed]);
 
   useEffect(() => {
@@ -233,10 +236,11 @@ const EditorPage: React.FC = () => {
     setAuthed(false);
   };
 
-  const loadSingleResume = async (id: number) => { // Теперь она строго принимает число
+  const loadSingleResume = async (id: number) => {
+    // Теперь она строго принимает число
     try {
       const data: any = await resumeApi.get(id); // Используем any, чтобы TS не ругался на ключи
-      
+
       setDraft({
         ...data,
         // Собираем данные: проверяем оба варианта имени ключа на всякий случай
@@ -264,14 +268,14 @@ const EditorPage: React.FC = () => {
           </button>
         </div>
         <div className={styles["editor__sidebar-list"]}>
-        <ResumeList
-  resumes={resumes}
-  activeId={draft.id}
-  // Передаем id из объекта r, который прокидывает сайдбар
-  onSelect={(r: Resume) => r.id && loadSingleResume(r.id)} 
-  onDelete={handleDelete}
-  onNew={() => setDraft(blankResume())}
-/>
+          <ResumeList
+            resumes={resumes}
+            activeId={draft.id}
+            // Передаем id из объекта r, который прокидывает сайдбар
+            onSelect={(r: Resume) => r.id && loadSingleResume(r.id)}
+            onDelete={handleDelete}
+            onNew={() => setDraft(blankResume())}
+          />
         </div>
       </aside>
 
