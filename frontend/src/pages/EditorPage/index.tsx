@@ -1,4 +1,3 @@
-// EditorPage.tsx
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { resumeApi, authApi, onUnauthorized, getToken } from "../../api/client";
 import { useReactToPrint } from "react-to-print";
@@ -7,7 +6,6 @@ import AuthModal from "../../components/AuthModal";
 import ResumeList from "../../components/ResumeList";
 import ResumePreview from "../../components/ResumePreview";
 import styles from "./EditorPage.module.scss";
-// import axios from "axios";
 
 const blankResume = (): Resume => ({
   title: "",
@@ -56,7 +54,6 @@ function useDebounce<T>(value: T, delay = 800): T {
   return debouncedValue;
 }
 
-// ========== Компонент страницы ==========
 const EditorPage: React.FC = () => {
   const [authed, setAuthed] = useState(!!getToken());
   const [resumes, setResumes] = useState<any[]>([]);
@@ -68,6 +65,8 @@ const EditorPage: React.FC = () => {
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [generatingAI, setGeneratingAI] = useState<any>({});
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const debouncedDraft = useDebounce(draft, 900);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -86,12 +85,12 @@ const EditorPage: React.FC = () => {
           -webkit-print-color-adjust: exact; 
         }
         #printable_area {
-          width: 210mm !important; /* Строго ширина A4 */
+          width: 210mm !important;
           min-height: 297mm !important;
-          padding: 20mm !important; /* Поля внутри листа */
+          padding: 20mm !important;
           margin: 0 auto !important;
           box-shadow: none !important;
-          transform: scale(1) !important; /* Убираем сжатие */
+          transform: scale(1) !important;
         }
       }
     `,
@@ -262,11 +261,23 @@ const EditorPage: React.FC = () => {
     }
   };
 
+  // Обработчики для бургер-меню
+  const handleSelectResume = (r: Resume) => {
+    if (r.id) loadSingleResume(r.id);
+    setShowMobileMenu(false);
+  };
+  const handleNewResume = () => {
+    setDraft(blankResume());
+    setShowMobileMenu(false);
+  };
+  const openMobileMenu = () => setShowMobileMenu(true);
+  const closeMobileMenu = () => setShowMobileMenu(false);
+
   if (!authed) return <AuthModal onSuccess={() => setAuthed(true)} />;
 
   return (
     <div className={styles.editor}>
-      {/* Sidebar */}
+      {/* Sidebar (десктоп/планшет) */}
       <aside className={styles.editor__sidebar}>
         <div className={styles["editor__sidebar-header"]}>
           <h1>
@@ -280,7 +291,6 @@ const EditorPage: React.FC = () => {
           <ResumeList
             resumes={resumes}
             activeId={draft.id}
-            // Передаем id из объекта r, который прокидывает сайдбар
             onSelect={(r: Resume) => r.id && loadSingleResume(r.id)}
             onDelete={handleDelete}
             onNew={() => setDraft(blankResume())}
@@ -301,15 +311,32 @@ const EditorPage: React.FC = () => {
             />
           </div>
           <div className={styles.header_right}>
-            <button className="btn btn--secondary" onClick={handlePrint}>
-              Download PDF
+            <button
+              className="btn btn--secondary"
+              id={styles.mobileMenuBtn}
+              onClick={openMobileMenu}
+            >
+              ☰
             </button>
+            <button
+              className="btn btn--secondary"
+              id={styles.mobilePreviewBtn}
+              onClick={() => setShowMobilePreview(true)}
+              title="Preview"
+            >
+              👁️ <span className={styles.hideMobile}>Preview</span>
+            </button>
+
+            <button className="btn btn--secondary" onClick={handlePrint}>
+              PDF
+            </button>
+
             <button
               className="btn btn--primary"
               onClick={handleSave}
               disabled={saving}
             >
-              {saving ? "Saving..." : "Save"}
+              {saving ? "..." : "Save"}
             </button>
           </div>
         </div>
@@ -501,7 +528,6 @@ const EditorPage: React.FC = () => {
                   </button>
                 </div>
                 <div className={styles["entry-card__grid"]}>
-                  {/* Первая строка: Название ВУЗа на всю ширину */}
                   <div className={`${styles.field} ${styles["field--full"]}`}>
                     <label>Institution</label>
                     <input
@@ -513,7 +539,6 @@ const EditorPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Вторая строка: Степень и Направление */}
                   <div className={styles.field}>
                     <label>Degree Level</label>
                     <input
@@ -533,7 +558,6 @@ const EditorPage: React.FC = () => {
                     />
                   </div>
 
-                  {/* Третья строка: Даты */}
                   <div className={styles.field}>
                     <label>Start Year</label>
                     <input
@@ -609,7 +633,7 @@ const EditorPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Preview pane */}
+      {/* Preview pane (десктоп) */}
       <div className={styles.editor__preview_pane}>
         <div
           ref={contentRef}
@@ -619,6 +643,41 @@ const EditorPage: React.FC = () => {
           <ResumePreview resume={draft} />
         </div>
       </div>
+
+      {/* Мобильный превью оверлей */}
+      {showMobilePreview && (
+        <div className={styles.mobilePreviewOverlay}>
+          <div className={styles.mobilePreviewContent}>
+            <div className={styles.mobilePreviewHeader}>
+              <h3>Resume Preview</h3>
+              <button onClick={() => setShowMobilePreview(false)}>Close</button>
+            </div>
+            <div className={styles.mobilePreviewBody}>
+              <ResumePreview resume={draft} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMobileMenu && (
+        <div className={styles.mobileMenuOverlay}>
+          <div className={styles.mobileMenuContent}>
+            <div className={styles.mobileMenuHeader}>
+              <h3>Resumes</h3>
+              <button onClick={closeMobileMenu}>✕</button>
+            </div>
+            <div className={styles.mobileMenuBody}>
+              <ResumeList
+                resumes={resumes}
+                activeId={draft.id}
+                onSelect={handleSelectResume}
+                onDelete={handleDelete}
+                onNew={handleNewResume}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

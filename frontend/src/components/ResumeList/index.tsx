@@ -18,7 +18,7 @@ function formatDate(iso?: string): string {
 const ResumeList: React.FC<Props> = ({ resumes, activeId, onSelect, onDelete, onNew }) => {
   return (
     <div className={styles['resume-list']}>
-      <button className="btn btn--primary" style={{ width: '100%', marginBottom: 8 }} onClick={onNew}>
+      <button className={`btn btn--primary ${styles['resume-list__new-btn']}`} onClick={onNew}>
         + New Resume
       </button>
 
@@ -28,11 +28,12 @@ const ResumeList: React.FC<Props> = ({ resumes, activeId, onSelect, onDelete, on
         resumes.map(r => (
           <div
             key={r.id}
-            className={[
-              styles['resume-list__item'],
-              r.id === activeId ? styles['resume-list__item--active'] : '',
-            ].join(' ')}
+            className={`${styles['resume-list__item']} ${r.id === activeId ? styles['resume-list__item--active'] : ''}`}
             onClick={() => onSelect(r)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect(r)}
+            aria-label={`Select resume ${r.title || 'untitled'}`}
           >
             <div className={styles['resume-list__info']}>
               <span className={styles['resume-list__title']}>{r.title || 'Untitled'}</span>
@@ -45,6 +46,7 @@ const ResumeList: React.FC<Props> = ({ resumes, activeId, onSelect, onDelete, on
               <button
                 className={`btn btn--danger ${styles['resume-list__btn']}`}
                 onClick={e => { e.stopPropagation(); if (r.id) onDelete(r.id); }}
+                aria-label={`Delete ${r.title || 'resume'}`}
               >
                 Delete
               </button>

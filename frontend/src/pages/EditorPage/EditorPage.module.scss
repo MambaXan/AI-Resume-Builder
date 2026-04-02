@@ -1,4 +1,3 @@
-// EditorPage.module.scss
 @use "../../styles/global" as *;
 
 // ─── Grid layout ─────────────────────────────────────────────────────────────
@@ -18,6 +17,15 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (max-width: 1024px) and (min-width: 769px) {
+    height: auto;
+    max-height: 300px;
+  }
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .editor__sidebar-header {
@@ -34,6 +42,13 @@
     letter-spacing: -0.02em;
     span {
       color: $color-accent;
+    }
+  }
+
+  @media (max-width: 600px) {
+    padding: 12px 16px;
+    h1 {
+      font-size: 0.9rem;
     }
   }
 }
@@ -68,12 +83,35 @@
 
 .editor__form_header {
   padding: 16px 24px;
+  background: #fff;
   border-bottom: 1px solid $color-border;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-shrink: 0;
+  position: sticky; // Хедер будет всегда сверху при скролле
+  top: 0;
+  z-index: 10;
   gap: 20px;
+
+  @media (max-width: 600px) {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    .header_right {
+      display: flex;
+      align-items: center;
+      gap: 8px; // Уменьшим зазор, чтобы влезло больше кнопок
+      flex-shrink: 0;
+
+      button {
+        flex: 1;
+        font-size: 0.8rem;
+        padding: 8px;
+      }
+    }
+  }
 
   .header_left {
     flex: 1;
@@ -106,6 +144,33 @@
     gap: 12px;
     flex-shrink: 0;
   }
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    flex-direction: column;
+    align-items: stretch; // Растягиваем на всю ширину
+    gap: 12px;
+
+    .header_left {
+      width: 100%;
+    }
+
+    .header_right {
+      display: grid;
+      // Делаем сетку: Preview и Menu маленькие, основные кнопки пошире
+      grid-template-columns: auto auto 1fr 1fr;
+      gap: 6px;
+      width: 100%;
+
+      button {
+        padding: 8px 4px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+      }
+    }
+  }
 }
 
 .editor__form_body {
@@ -122,7 +187,6 @@
   height: 100vh;
   background-color: #e8e8ed;
   overflow: hidden;
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -137,7 +201,6 @@
   min-height: 297mm;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
-
   transform-origin: center center;
 
   @media (max-width: 1600px) {
@@ -146,7 +209,7 @@
   }
 }
 
-// ─── Form sections ───────────────────────────────────────────
+// ─── Form sections ──────────────────────────────────────────────────────────
 .form-section {
   &__title {
     font-size: 0.75rem;
@@ -177,9 +240,13 @@
   border-bottom: 1px solid $color-border;
 }
 
+// ─── Общий блок полей (с поддержкой AI кнопки) ─────────────────────────────
 .field {
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 
   label {
     display: block;
@@ -195,7 +262,7 @@
     width: 100%;
     box-sizing: border-box;
     min-width: 0;
-    padding: 6px 8px;
+    padding: 10px 12px;
     border: 1px solid $color-border;
     border-radius: $radius-sm;
     font-size: 0.875rem;
@@ -210,9 +277,25 @@
   textarea {
     resize: vertical;
   }
+
+  // Стили для блока, содержащего инпут и AI кнопку
+  div[style*="display: flex"] {
+    @media (max-width: 480px) {
+      flex-direction: column;
+      button {
+        width: 100%;
+        padding: 10px !important;
+      }
+    }
+  }
+
+  // Спец-класс для полей на всю ширину (например, Institution)
+  &--full {
+    grid-column: 1 / -1;
+  }
 }
 
-// ─── Entry cards ───────────────────────────────────────────────────────────
+// ─── Entry cards ────────────────────────────────────────────────────────────
 .entry-card {
   border: 1px solid $color-border;
   border-radius: $radius-md;
@@ -243,43 +326,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    width: 100%;
-    margin-bottom: 12px;
-
-    @media (max-width: 600px) {
-      grid-template-columns: 1fr;
-    }
-  }
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-  }
-
-  input {
-    padding: 10px 12px;
-    border: 1px solid $color-border;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-
-    &:focus {
-      outline: none;
-      border-color: $color-accent;
-    }
-  }
-
-  // Спец-класс для полей на всю ширину (например, Institution)
-  &--full {
-    grid-column: 1 / -1;
   }
 }
 
@@ -296,7 +342,7 @@
   }
 }
 
-// ─── Skills ────────────────────────────────────────────────────────────────
+// ─── Skills ─────────────────────────────────────────────────────────────────
 .skills-list {
   display: flex;
   flex-wrap: wrap;
@@ -334,7 +380,16 @@
   }
 }
 
-// ─── Print styles ──────────────────────────────────────────────────────────
+// ─── AI кнопка ──────────────────────────────────────────────────────────────
+.ai-btn {
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e2e7;
+  background: #f5f5f7;
+  cursor: pointer;
+}
+
+// ─── Print styles ───────────────────────────────────────────────────────────
 @media print {
   nav,
   aside,
@@ -366,7 +421,7 @@
   }
 }
 
-// ─── Responsive ────────────────────────────────────────────────────────────
+// ─── Responsive (общие) ─────────────────────────────────────────────────────
 @media (max-width: 1024px) {
   .editor {
     grid-template-columns: 1fr;
@@ -394,10 +449,130 @@
     grid-template-columns: 1fr !important;
   }
 }
-.ai-btn {
-  padding: 0 12px;
-  border-radius: 6px;
-  border: 1px solid #e2e2e7;
-  background: #f5f5f7;
-  cursor: pointer;
+
+// ─── Мобильный превью оверлей ───────────────────────────────────────────────
+.mobilePreviewOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobilePreviewHeader {
+  background: #fff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid $color-border;
+
+  button {
+    color: $color-accent;
+    font-weight: 600;
+  }
+}
+
+.mobilePreviewBody {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+
+  :global(.printable_area) {
+    transform: scale(0.4);
+    transform-origin: top center;
+  }
+}
+
+#mobilePreviewBtn {
+  display: none;
+  @media (max-width: 1024px) {
+    display: block;
+  }
+}
+
+// ─── Бургер-меню (мобильный список резюме) ─────────────────────────────────
+#mobileMenuBtn {
+  display: none;
+  @media (max-width: 768px) {
+    display: inline-flex;
+  }
+}
+
+.mobileMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileMenuContent {
+  background: #fff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobileMenuHeader {
+  background: #fff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  button {
+    font-size: 1.2rem;
+    background: none;
+    border: none;
+    color: $color-muted;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+}
+
+.mobileMenuBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+#mobilePreviewBtn, #mobileMenuBtn {
+  display: none; // По умолчанию скрыты
+
+  @media (max-width: 1024px) {
+    display: flex;
+    min-width: 40px;
+    padding: 8px;
+    background: $color-surface;
+  }
+}
+
+.title_input {
+  width: 100%;
+  font-size: 1.1rem; // Чуть уменьшим для мобилок
+  font-weight: 700;
+  border: none;
+  outline: none;
+  padding: 4px 0;
+  
+  @media (min-width: 769px) {
+    font-size: 1.25rem;
+  }
 }
