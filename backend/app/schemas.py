@@ -46,7 +46,6 @@ class EducationBase(BaseModel):
     field_of_study: Optional[str] = None
     start_date: Optional[str] = None
     end_date: Optional[str] = None
-    gpa: Optional[str] = None
 
 
 class EducationCreate(EducationBase):

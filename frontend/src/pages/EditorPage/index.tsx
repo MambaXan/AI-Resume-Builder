@@ -401,7 +401,7 @@ const EditorPage: React.FC = () => {
                     <input
                       value={w.company}
                       onChange={(e) => setWork(i, { company: e.target.value })}
-                      placeholder="Напр. Google"
+                      placeholder="Ex. Google"
                     />
                   </div>
 
@@ -414,9 +414,8 @@ const EditorPage: React.FC = () => {
                         onChange={(e) =>
                           setWork(i, { position: e.target.value })
                         }
-                        placeholder="Напр. Frontend Developer"
+                        placeholder="Ex. Data Analyst"
                       />
-                      {/* КНОПКА AI ГЕНЕРАЦИИ */}
                       <button
                         type="button"
                         onClick={() =>
@@ -451,7 +450,7 @@ const EditorPage: React.FC = () => {
                   </div>
 
                   <div className={styles.field}>
-                    <label>End (leave blank = Present)</label>
+                    <label>End (YYYY-MM)</label>
                     <input
                       value={w.end_date ?? ""}
                       onChange={(e) => setWork(i, { end_date: e.target.value })}
@@ -502,25 +501,43 @@ const EditorPage: React.FC = () => {
                   </button>
                 </div>
                 <div className={styles["entry-card__grid"]}>
-                  <div className={styles.field}>
+                  {/* Первая строка: Название ВУЗа на всю ширину */}
+                  <div className={`${styles.field} ${styles["field--full"]}`}>
                     <label>Institution</label>
                     <input
+                      placeholder="University of Messina"
                       value={e.institution}
                       onChange={(ev) =>
                         setEdu(i, { institution: ev.target.value })
                       }
                     />
                   </div>
+
+                  {/* Вторая строка: Степень и Направление */}
                   <div className={styles.field}>
-                    <label>Degree</label>
+                    <label>Degree Level</label>
                     <input
+                      placeholder="Bachelor"
                       value={e.degree}
                       onChange={(ev) => setEdu(i, { degree: ev.target.value })}
                     />
                   </div>
                   <div className={styles.field}>
-                    <label>Start</label>
+                    <label>Field of Study</label>
                     <input
+                      placeholder="Data Analysis"
+                      value={e.field_of_study || ""}
+                      onChange={(ev) =>
+                        setEdu(i, { field_of_study: ev.target.value })
+                      }
+                    />
+                  </div>
+
+                  {/* Третья строка: Даты */}
+                  <div className={styles.field}>
+                    <label>Start Year</label>
+                    <input
+                      placeholder="2025"
                       value={e.start_date}
                       onChange={(ev) =>
                         setEdu(i, { start_date: ev.target.value })
@@ -528,8 +545,9 @@ const EditorPage: React.FC = () => {
                     />
                   </div>
                   <div className={styles.field}>
-                    <label>End</label>
+                    <label>End Year (or Expected)</label>
                     <input
+                      placeholder="2028"
                       value={e.end_date ?? ""}
                       onChange={(ev) =>
                         setEdu(i, { end_date: ev.target.value })
