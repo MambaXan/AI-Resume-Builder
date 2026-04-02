@@ -125,8 +125,8 @@ def read_resume(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    # Теперь тут 3 аргумента
-    resume = crud.get_resume(db=db, resume_id=resume_id, user_id=current_user.id)
+    resume = crud.get_resume(
+        db=db, resume_id=resume_id, user_id=current_user.id)
     if resume is None:
         raise HTTPException(status_code=404, detail="Resume not found")
     return resume

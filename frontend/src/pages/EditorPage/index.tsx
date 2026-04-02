@@ -226,9 +226,20 @@ const EditorPage: React.FC = () => {
     });
 
   const handleDelete = async (id: number) => {
-    await resumeApi.delete(id);
-    if (draft.id === id) setDraft(blankResume());
-    await loadAllResumes();
+    if (!window.confirm("Точно удаляем?")) return;
+
+    try {
+      await resumeApi.delete(id);
+
+      if (draft.id === id) {
+        setDraft(blankResume());
+      }
+
+      await loadAllResumes();
+    } catch (error) {
+      console.error("Ошибка при удалении:", error);
+      alert("Не удалось удалить резюме. Возможно, проблемы на бэкенде.");
+    }
   };
 
   const handleLogout = () => {
@@ -237,13 +248,11 @@ const EditorPage: React.FC = () => {
   };
 
   const loadSingleResume = async (id: number) => {
-    // Теперь она строго принимает число
     try {
-      const data: any = await resumeApi.get(id); // Используем any, чтобы TS не ругался на ключи
+      const data: any = await resumeApi.get(id);
 
       setDraft({
         ...data,
-        // Собираем данные: проверяем оба варианта имени ключа на всякий случай
         work_experience: data.work_experience || data.experiences || [],
         education: data.education || [],
         skills: data.skills || [],

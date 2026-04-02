@@ -31,7 +31,7 @@ def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
         user_id=user_id
     )
     db.add(db_resume)
-    db.flush() # Получаем ID
+    db.flush()  # Получаем ID
 
     # Добавляем вложенные данные, если они есть в запросе
     for exp in resume.work_experience:
@@ -47,7 +47,6 @@ def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
 
 
 def get_user_resumes(db: Session, user_id: int):
-    # Используй это имя в main.py
     return db.query(models.Resume).options(
         joinedload(models.Resume.work_experience),
         joinedload(models.Resume.education),
@@ -55,7 +54,7 @@ def get_user_resumes(db: Session, user_id: int):
     ).filter(models.Resume.user_id == user_id).all()
 
 
-def get_resume(db: Session, resume_id: int, user_id: int): # Добавь user_id!
+def get_resume(db: Session, resume_id: int, user_id: int):
     return db.query(models.Resume).options(
         joinedload(models.Resume.work_experience),
         joinedload(models.Resume.education),
@@ -70,10 +69,14 @@ def delete_resume(db: Session, resume_id: int, user_id: int):
     ).first()
 
     if db_resume:
-        db.delete(db_resume)
-        db.commit()
-        return True
-
+        try:
+            db.delete(db_resume)
+            db.commit()
+            return True
+        except Exception as e:
+            db.rollback()
+            print(f"Error deleting resume: {e}")
+            return False
     return False
 
 
