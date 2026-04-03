@@ -74,6 +74,7 @@ const EditorPage: React.FC = () => {
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: draft.title || "Resume",
+    onAfterPrint: () => console.log("Печать завершена"),
     pageStyle: `
       @page { 
         size: A4; 
@@ -653,7 +654,9 @@ const EditorPage: React.FC = () => {
               <button onClick={() => setShowMobilePreview(false)}>Close</button>
             </div>
             <div className={styles.mobilePreviewBody}>
-              <ResumePreview resume={draft} />
+              <div className={styles.scaleWrapper}>
+                <ResumePreview resume={draft} />
+              </div>
             </div>
           </div>
         </div>

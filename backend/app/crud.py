@@ -25,15 +25,13 @@ def get_resumes(db: Session, user_id: int):
 
 
 def create_user_resume(db: Session, resume: schemas.ResumeCreate, user_id: int):
-    # Создаем основной объект
     db_resume = models.Resume(
         **resume.model_dump(exclude={'work_experience', 'education', 'skills'}),
         user_id=user_id
     )
     db.add(db_resume)
-    db.flush()  # Получаем ID
+    db.flush()
 
-    # Добавляем вложенные данные, если они есть в запросе
     for exp in resume.work_experience:
         db.add(models.Experience(**exp.model_dump(), resume_id=db_resume.id))
     for edu in resume.education:

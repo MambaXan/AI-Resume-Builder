@@ -455,10 +455,10 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  background: #525659;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
 }
@@ -479,14 +479,24 @@
 
 .mobilePreviewBody {
   flex: 1;
-  overflow: auto;
-  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 
   :global(.printable_area) {
     transform: scale(0.4);
     transform-origin: top center;
+  }
+
+  .scaleWrapper {
+    transform: scale(0.45); // Подбери под свой экран
+    transform-origin: top center;
+    width: 210mm; // Ширина A4
+    height: 297mm; // Высота A4
+    margin-bottom: -150mm; // Компенсация пустого места снизу из-за scale
   }
 }
 
@@ -553,7 +563,8 @@
   overflow-y: auto;
   padding: 16px;
 }
-#mobilePreviewBtn, #mobileMenuBtn {
+#mobilePreviewBtn,
+#mobileMenuBtn {
   display: none; // По умолчанию скрыты
 
   @media (max-width: 1024px) {
@@ -571,7 +582,7 @@
   border: none;
   outline: none;
   padding: 4px 0;
-  
+
   @media (min-width: 769px) {
     font-size: 1.25rem;
   }
