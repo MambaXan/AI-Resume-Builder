@@ -565,7 +565,7 @@
 }
 #mobilePreviewBtn,
 #mobileMenuBtn {
-  display: none; // По умолчанию скрыты
+  display: none;
 
   @media (max-width: 1024px) {
     display: flex;
@@ -577,7 +577,7 @@
 
 .title_input {
   width: 100%;
-  font-size: 1.1rem; // Чуть уменьшим для мобилок
+  font-size: 1.1rem;
   font-weight: 700;
   border: none;
   outline: none;
@@ -585,5 +585,12 @@
 
   @media (min-width: 769px) {
     font-size: 1.25rem;
+  }
+}
+@media (max-width: 768px) {
+  .field input,
+  .field textarea,
+  .title_input {
+    font-size: 16px !important;
   }
 }
