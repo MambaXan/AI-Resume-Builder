@@ -278,7 +278,6 @@ const EditorPage: React.FC = () => {
 
   return (
     <div className={styles.editor}>
-      {/* Sidebar (десктоп/планшет) */}
       <aside className={styles.editor__sidebar}>
         <div className={styles["editor__sidebar-header"]}>
           <h1>
@@ -299,7 +298,6 @@ const EditorPage: React.FC = () => {
         </div>
       </aside>
 
-      {/* Форма */}
       <div className={styles.editor__form_pane}>
         <div className={styles.editor__form_header}>
           <div className={styles.header_left}>
@@ -310,6 +308,11 @@ const EditorPage: React.FC = () => {
               onChange={(e) => set({ title: e.target.value })}
               placeholder="Resume title..."
             />
+            <span className={styles.saveBadge}>
+              {saveStatus === "saving" && "⏳ Saving..."}
+              {saveStatus === "saved" && "✅ Saved"}
+              {saveStatus === "error" && "❌ Error"}
+            </span>
           </div>
           <div className={styles.header_right}>
             <button

@@ -155,3 +155,7 @@ a {
   color: $color-danger;
   margin-top: 4px;
 }
+.btn:active {
+  transform: scale(0.96);
+  opacity: 0.8;
+}
