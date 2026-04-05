@@ -1,24 +1,29 @@
 @use "../../styles/global" as *;
 
+* {
+  box-sizing: border-box;
+}
+
 .preview {
   background-color: white;
-  width: 100%;         /* Строго ширина А4 */
-  min-height: 297mm;    /* Строго высота А4 */
-  padding: 20mm;        /* Стандартные поля как в Word */
-  margin: 0 auto;       /* Центрируем внутри серой панели */
-  
-  box-sizing: border-box; 
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* Та самая тень */
-  
-  // Текст
+  width: 100%;
+  min-height: 297mm;
+  padding: 20mm;
+  margin: 0 auto;
+  border-radius: 0 !important;
+
+  box-sizing: border-box;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
   color: #333;
   line-height: 1.5;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 
   &__header {
     border-bottom: 2px solid #000;
     padding-bottom: 1rem;
     margin-bottom: 2rem;
+    border-radius: 0 !important;
   }
 
   &__name {
@@ -51,11 +56,12 @@
 
   &__section_title {
     font-size: 1.2rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      border-bottom: 1px solid #eee;
-      margin-bottom: 0.5rem;
-      font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    border-radius: 0 !important;
   }
 
   &__entry {
@@ -148,28 +154,21 @@
     display: none !important;
   }
 }
-// components/ResumePreview/ResumePreview.module.scss
 
 .resume_sheet {
-  background-color: white; // Белый лист
-  
-  // ЖЕСТКИЕ РАЗМЕРЫ А4
+  background-color: white;
+
   width: 210mm;
   min-height: 297mm;
-  
-  // ВНУТРЕННИЕ ОТСТУПЫ КОНТЕНТА (как в Word)
-  padding: 20mm; 
-  
-  // Красивая тень, чтобы лист "парил"
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); 
-  
-  // Чтобы CSS-свойства не ломали размеры листа
-  box-sizing: border-box; 
-  
-  // Чтобы превью не расползалось, если контента мало
-  flex-shrink: 0; 
 
-  // Масштабирование для маленьких экранов
+  padding: 20mm;
+
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+
+  box-sizing: border-box;
+
+  flex-shrink: 0;
+
   @media (max-width: 1600px) {
     transform: scale(0.85);
     transform-origin: top center;

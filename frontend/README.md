@@ -2,60 +2,98 @@
 
 React (CRA) + TypeScript + SCSS. No external UI libraries.
 
-## Структура проекта
+---
+
+## Screenshots
+
+### Register Page
+![Register Page](../images/rb-login-page.png)
+
+### Main Page
+![Resume Building Page](../images/rb-main-page.png)
+
+### AI Feature
+![AI feature](../images/rb-ai.png)
+
+### PDF Downloading Page
+![PDF Downloading Page](../images/rb-resume-preview.png)
+
+### Resume List
+![Resume List](../images/rb-resumes-list.png)
+
+---
+
+## Project Structure
 
 ```
 src/
 ├── api/
-│   └── client.ts          # fetch-обёртка: авторизация, JWT, 401-хендлер
+│   └── client.ts          # fetch wrapper: auth, JWT, 401 handler
 ├── components/
 │   ├── AuthModal/
 │   │   ├── index.tsx       # Login / Register modal
 │   │   └── AuthModal.module.scss
 │   ├── ResumeList/
-│   │   ├── index.tsx       # Список резюме в сайдбаре
+│   │   ├── index.tsx       # Resume list in sidebar
 │   │   └── ResumeList.module.scss
 │   └── ResumePreview/
-│       ├── index.tsx       # A4 live-превью
+│       ├── index.tsx       # A4 live preview
 │       └── ResumePreview.module.scss
 ├── pages/
 │   └── EditorPage/
-│       ├── index.tsx       # Главная страница (форма + превью)
+│       ├── index.tsx       # Main page (form + preview)
 │       └── EditorPage.module.scss
 ├── styles/
-│   └── global.scss        # Переменные, reset, .btn, .field утилиты
+│   └── global.scss        # Variables, reset, .btn, .field utilities
 ├── types/
 │   └── index.ts           # User, Resume, WorkExperience, Education, Skill
 ├── App.tsx
 └── index.tsx
 ```
 
-## Запуск
+---
+
+## Getting Started
 
 ```bash
 npm install
 npm start
 ```
 
-Бэкенд должен быть запущен на `http://127.0.0.1:8000`.
+The FastAPI backend must be running at `http://127.0.0.1:8000`.
 
-## Ключевые решения
+---
 
-- **Нет внешних библиотек** — только `fetch`, React, TypeScript, SCSS.
-- **JWT** хранится в `localStorage` под ключом `resume_builder_token`. При 401 токен удаляется и вызывается `unauthorizedCallback` → показывается `AuthModal`.
-- **Auto-save**: `useDebounce` (900 мс) следит за `draft`. Если у резюме есть `id`, изменения сохраняются автоматически через `PUT /resumes/{id}`.
-- **A4 preview** рендерится как `210mm × 297mm` и масштабируется через `transform: scale()` в зависимости от ширины экрана — никаких iframe.
-- **SCSS modules** на каждом компоненте + глобальные утилиты (`.btn`, `.field`) в `global.scss`.
+## Responsive Design
 
-## API-эндпоинты (FastAPI)
+The app is fully responsive across all screen sizes:
 
-| Метод  | Путь              | Описание                        |
-|--------|-------------------|---------------------------------|
-| POST   | /auth/token       | OAuth2 login → JWT              |
-| POST   | /auth/register    | Регистрация нового пользователя |
-| GET    | /users/me         | Текущий пользователь            |
-| GET    | /resumes          | Список резюме                   |
-| POST   | /resumes          | Создать резюме                  |
-| GET    | /resumes/{id}     | Получить одно резюме            |
-| PUT    | /resumes/{id}     | Обновить резюме                 |
-| DELETE | /resumes/{id}     | Удалить резюме                  |
+| Breakpoint     | Width          | Layout                                      |
+|----------------|----------------|---------------------------------------------|
+| Desktop        | ≥ 1200px       | Sidebar + Form + A4 Preview (3 columns)     |
+| Laptop         | 1000px–1199px  | Sidebar + Form (preview hidden)             |
+| Tablet         | 768px–999px    | Sidebar collapses to top bar                |
+| Mobile         | < 768px        | Single column, stacked fields               |
+
+## Key Design Decisions
+
+- **No external libraries** — plain `fetch`, React, TypeScript, and SCSS only.
+- **JWT** is stored in `localStorage` under the key `resume_builder_token`. On a 401 response the token is removed and `unauthorizedCallback` fires → `AuthModal` is shown.
+- **Auto-save**: `useDebounce` (900 ms) watches `draft`. If the resume has an `id`, changes are automatically persisted via `PUT /resumes/{id}`.
+- **A4 preview** renders at `210mm × 297mm` and scales via `transform: scale()` based on viewport width — no iframes involved.
+- **SCSS modules** per component + global utilities (`.btn`, `.field`) in `global.scss`.
+
+---
+
+## API Endpoints (FastAPI)
+
+| Method | Path            | Description         |
+|--------|-----------------|---------------------|
+| POST   | /auth/token     | OAuth2 login → JWT  |
+| POST   | /auth/register  | Register a new user |
+| GET    | /users/me       | Get current user    |
+| GET    | /resumes        | List all resumes    |
+| POST   | /resumes        | Create a resume     |
+| GET    | /resumes/{id}   | Get a single resume |
+| PUT    | /resumes/{id}   | Update a resume     |
+| DELETE | /resumes/{id}   | Delete a resume     |
