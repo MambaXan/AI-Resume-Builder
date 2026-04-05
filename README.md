@@ -1,4 +1,4 @@
-# Resume Builder — Frontend
+# AI Resume Builder — Frontend
 
 React (CRA) + TypeScript + SCSS. No external UI libraries.
 
