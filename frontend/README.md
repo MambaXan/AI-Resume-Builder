@@ -7,19 +7,24 @@ React (CRA) + TypeScript + SCSS. No external UI libraries.
 ## Screenshots
 
 ### Register Page
-![Register Page](../images/rb-login-page.png)
+<!-- ![Register Page] -->
+(../images/rb-login-page.png)
 
 ### Main Page
-![Resume Building Page](../images/rb-main-page.png)
+<!-- ![Resume Building Page] -->
+(../images/rb-main-page.png)
 
 ### AI Feature
-![AI feature](../images/rb-ai.png)
+<!-- ![AI feature] -->
+(../images/rb-ai.png)
 
 ### PDF Downloading Page
-![PDF Downloading Page](../images/rb-resume-preview.png)
+<!-- ![PDF Downloading Page] -->
+(../images/rb-resume-preview.png)
 
 ### Resume List
-![Resume List](../images/rb-resumes-list.png)
+<!-- ![Resume List] -->
+(../images/rb-resumes-list.png)
 
 ---
 
