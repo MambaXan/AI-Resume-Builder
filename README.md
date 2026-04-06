@@ -1,4 +1,4 @@
-# AI Resume Builder — Frontend
+# Resume Builder — Frontend
 
 React (CRA) + TypeScript + SCSS. No external UI libraries.
 
@@ -7,20 +7,19 @@ React (CRA) + TypeScript + SCSS. No external UI libraries.
 ## Screenshots
 
 ### Register Page
-<!-- Add screenshot here -->
-![Register Page](./screenshots/register.png)
+![Register Page](./images/rb-login-page.png)
 
-### Resume Building Page
-<!-- Add screenshot here -->
-![Resume Building Page](./screenshots/building.png)
+### Main Page
+![Resume Building Page](./images/rb-main-page.png)
 
-### Preview Page
-<!-- Add screenshot here -->
-![Preview Page](./screenshots/preview.png)
+### AI Feature
+![AI feature](./images/rb-ai.png)
 
 ### PDF Downloading Page
-<!-- Add screenshot here -->
-![PDF Downloading Page](./screenshots/pdf-download.png)
+![PDF Downloading Page](./images/rb-resume-preview.png)
+
+### Resume List
+![Resume List](./images/rb-resumes-list.png)
 
 ---
 
@@ -75,11 +74,6 @@ The app is fully responsive across all screen sizes:
 | Laptop         | 1000px–1199px  | Sidebar + Form (preview hidden)             |
 | Tablet         | 768px–999px    | Sidebar collapses to top bar                |
 | Mobile         | < 768px        | Single column, stacked fields               |
-
-
-
-
----
 
 ## Key Design Decisions
 
